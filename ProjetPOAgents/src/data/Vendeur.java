@@ -51,6 +51,11 @@ public class Vendeur implements Serializable {
         this.tresorerie = tresorerie;
         this.stockTotal = stockTotal;
     }
+    
+    public Vendeur(int tresorerie, int stockTotal) {
+        this.tresorerie = tresorerie;
+        this.stockTotal = stockTotal;
+    }
 
     public Integer getIdVendeur() {
         return idVendeur;
