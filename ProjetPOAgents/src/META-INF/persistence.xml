@@ -3,9 +3,9 @@
   <persistence-unit name="POAgentPU" transaction-type="RESOURCE_LOCAL">
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <class>data.Vente</class>
-    <class>data.Stock</class>
     <class>data.Objet</class>
     <class>data.Vendeur</class>
+    <class>data.Stock</class>
     <class>data.Categorie</class>
     <properties>
       <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/db_poagent?zeroDateTimeBehavior=convertToNull"/>
