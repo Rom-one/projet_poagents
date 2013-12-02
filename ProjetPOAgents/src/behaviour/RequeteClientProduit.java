@@ -7,6 +7,7 @@
 package behaviour;
 
 import agent.VendeurAgent;
+import data.Objet;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
@@ -29,15 +30,22 @@ public class RequeteClientProduit extends CyclicBehaviour {
         
         if(request != null) {
             // Catalogue du vendeur
-            HashMap<String,String> catalogue = ((VendeurAgent) this.myAgent).getCatalogue();
+            HashMap<Integer,Objet> catalogue = ((VendeurAgent) this.myAgent).getCatalogue();
             // Référence du produit demandé
-            String produit_ref = request.getContent();
+            Integer produit_ref = Integer.valueOf(request.getContent());
             ACLMessage reply = null;
             
             if(catalogue.containsKey(produit_ref)) {
+               
+               Objet objet = catalogue.get(produit_ref);
+               
+               int prix = 42;
+               
+               // Définir la stratégie à adopter pour le prix
+                
                reply = new ACLMessage(ACLMessage.CONFIRM); 
                reply.setOntology("reply-one-product");
-               reply.setContent("price");
+               reply.setContent(String.valueOf(prix));
             }
             else {
                reply = new ACLMessage(ACLMessage.DISCONFIRM); 
