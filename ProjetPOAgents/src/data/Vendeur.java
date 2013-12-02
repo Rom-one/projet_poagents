@@ -1,3 +1,9 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
 package data;
 
 import java.io.Serializable;
@@ -25,7 +31,6 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Vendeur.findByTresorerie", query = "SELECT v FROM Vendeur v WHERE v.tresorerie = :tresorerie"),
     @NamedQuery(name = "Vendeur.findByStockTotal", query = "SELECT v FROM Vendeur v WHERE v.stockTotal = :stockTotal")})
 public class Vendeur implements Serializable {
-
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -5,8 +5,12 @@
  */
 package agent;
 
+import dao.ObjetJpaController;
+import data.Objet;
+import data.Vendeur;
 import jade.core.Agent;
 import java.util.HashMap;
+import javax.persistence.Persistence;
 
 /**
  *
@@ -14,14 +18,18 @@ import java.util.HashMap;
  */
 public class VendeurAgent extends Agent {
 
-    private HashMap<String,String> catalogue;
+    private HashMap<String, String> catalogue;
+    private Vendeur vendeur;
+    ObjetJpaController ojc = new ObjetJpaController(Persistence.createEntityManagerFactory("POAgentPU"));
 
     public HashMap<String, String> getCatalogue() {
         return catalogue;
     }
-    
+
     @Override
     protected void setup() {
         System.out.println("Hello! Seller - agent " + this.getAID().getName() + " is ready");
+        Objet obj = (Objet) ojc.getEntityManager().find(Objet.class, 1);
+        System.out.println(obj.getNomObjet());
     }
 }
