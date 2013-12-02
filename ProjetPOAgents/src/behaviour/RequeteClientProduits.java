@@ -23,7 +23,7 @@ public class RequeteClientProduits extends CyclicBehaviour {
     public void action() {
         // Template destiné à identifier les requêtes pour un produit donné
         MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.QUERY_REF),
-                                                 MessageTemplate.MatchOntology("request-one-product"));
+                                                 MessageTemplate.MatchOntology("request-several-products"));
         
         // Réception du message
         ACLMessage request = myAgent.receive(mt);
@@ -31,11 +31,14 @@ public class RequeteClientProduits extends CyclicBehaviour {
         if(request != null) {
             // Catalogue du vendeur
             HashMap<Integer,Objet> catalogue = ((VendeurAgent) this.myAgent).getCatalogue();
-            // Référence du produit demandé
-            Integer produit_ref = Integer.valueOf(request.getContent());
+            // Produits renvoyés au client
+            HashMap<Integer,Objet> produits = new HashMap<Integer,Objet>();
+            // Filtres du produit
+            String [] filters = request.getContent().split(",");
+            
             ACLMessage reply;
             
-            if(catalogue.containsKey(produit_ref)) {
+            if(catalogue.containsKey("")) {
                reply = new ACLMessage(ACLMessage.CONFIRM); 
                reply.setOntology("reply-one-product");
                reply.setContent("price");
