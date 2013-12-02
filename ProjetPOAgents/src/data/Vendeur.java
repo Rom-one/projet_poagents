@@ -110,5 +110,13 @@ public class Vendeur implements Serializable {
     public String toString() {
         return "data.Vendeur[ idVendeur=" + idVendeur + " ]";
     }
+    
+    public void addRecette(int montant) {
+        tresorerie += montant;
+    }
+    
+    public void addDepense(int montant) {
+        tresorerie -= montant;
+    }
 
 }
