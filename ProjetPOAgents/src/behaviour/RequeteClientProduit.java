@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package behaviour;
 
 import agent.VendeurAgent;
@@ -11,7 +10,7 @@ import data.Objet;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 /**
  *
@@ -23,42 +22,43 @@ public class RequeteClientProduit extends CyclicBehaviour {
     public void action() {
         // Template destiné à identifier les requêtes pour un produit donné
         MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.QUERY_REF),
-                                                 MessageTemplate.MatchOntology("request-one-product"));
-        
+                MessageTemplate.MatchOntology("request-one-product"));
+
         // Réception du message
         ACLMessage request = myAgent.receive(mt);
-        
-        if(request != null) {
+
+        if (request != null) {
             // Catalogue du vendeur
-            HashMap<Integer,Objet> catalogue = ((VendeurAgent) this.myAgent).getCatalogue();
+            ArrayList<Objet> catalogue = (ArrayList<Objet>) ((VendeurAgent) this.myAgent).getCatalogue();
             // Référence du produit demandé
             Integer produit_ref = Integer.valueOf(request.getContent());
+            
+            Objet produit = null;
+            for (Objet objet : catalogue) {
+                if (objet.getRefObjet() == produit_ref) {
+                    produit = objet;
+                }
+            }
+
+            int prix = 42;
+            // Définir la stratégie à adopter pour le prix
+            
             ACLMessage reply = null;
-            
-            if(catalogue.containsKey(produit_ref)) {
-               
-               Objet objet = catalogue.get(produit_ref);
-               
-               int prix = 42;
-               
-               // Définir la stratégie à adopter pour le prix
-                
-               reply = new ACLMessage(ACLMessage.CONFIRM); 
-               reply.setOntology("reply-one-product");
-               reply.setContent(String.valueOf(prix));
+            if (produit == null) {
+                reply = new ACLMessage(ACLMessage.CONFIRM);
+                reply.setOntology("reply-one-product");
+                reply.setContent(String.valueOf(prix));
+            } else {
+                reply = new ACLMessage(ACLMessage.DISCONFIRM);
+                reply.setOntology("reply-one-product");
             }
-            else {
-               reply = new ACLMessage(ACLMessage.DISCONFIRM); 
-               reply.setOntology("reply-one-product");
-            }
-            
+
             myAgent.send(reply);
-        }
-        else {
+            
+        } else {
             block();
         }
-       
-        
+
     }
-    
+
 }
