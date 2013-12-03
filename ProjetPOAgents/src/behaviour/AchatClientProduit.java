@@ -7,15 +7,13 @@
 package behaviour;
 
 import agent.VendeurAgent;
+import dao.DAOFactory;
 import data.Objet;
 import data.Vente;
-import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  *
@@ -35,14 +33,14 @@ public class AchatClientProduit extends CyclicBehaviour {
         if (request != null) {
             // Produit acheté et son prix
             String [] buffer = request.getContent().split(",");
-            Objet objet = VendeurAgent.getObjetDAO().findObjet(Integer.valueOf(buffer[0]));
+            Objet objet = DAOFactory.getObjetDAO().findObjet(Integer.valueOf(buffer[0]));
             Integer prixVente = Integer.valueOf(buffer[1]);
             String acheteur = request.getSender().toString();
             Date dateVente = new Date();
             
             // Enregistrement de la vente
             Vente vente = new Vente(dateVente, prixVente, acheteur, objet);
-            VendeurAgent.getVenteDAO().create(vente);
+            DAOFactory.getVenteDAO().create(vente);
             
             // Enregistrement du paiement
             ((VendeurAgent) this.myAgent).getVendeur().addRecette(prixVente);

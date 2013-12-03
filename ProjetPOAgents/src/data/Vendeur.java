@@ -6,7 +6,10 @@
 
 package data;
 
+import dao.DAOFactory;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Calendar;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -119,8 +122,22 @@ public class Vendeur implements Serializable {
         tresorerie -= montant;
     }
     
-    public int getPrixParStrategie(Objet objet) {
-        return 0;
+    public int getPrixParStrategieHistorique(Objet objet) {
+        ArrayList<Vente> ventes = (ArrayList<Vente>) DAOFactory.getVenteDAO()
+                .getEntityManager()
+                .createNamedQuery("findByObjet")
+                .setParameter("objet", objet)
+                .getResultList();
+        
+        int prix = 0;
+        
+        int moyenne = 0;
+        for(Vente vente : ventes) {
+            moyenne += vente.getPrixVente();
+        }
+        moyenne /= ventes.size();
+        
+        return prix;
     }
 
 }

@@ -30,12 +30,12 @@ public class VendeurAgent extends Agent {
 
     private final static int STOCK_MOYEN = 15000;
     private final static int TRESORIE_MOYENNE = 15000;
+    
+    private final static long TEMPS_DEPART = System.currentTimeMillis();
+    private final static int SEMAINE_MS = 1000;
 
     private List<Objet> catalogue;
     private Vendeur vendeur;
-
-    private static ObjetJpaController objetDAO = new ObjetJpaController(Persistence.createEntityManagerFactory("POAgentPU"));
-    private static VenteJpaController venteDAO = new VenteJpaController(Persistence.createEntityManagerFactory("POAgentPU"));
 
     public List<Objet> getCatalogue() {
         return catalogue;
@@ -44,13 +44,9 @@ public class VendeurAgent extends Agent {
     public Vendeur getVendeur() {
         return vendeur;
     }
-
-    public static ObjetJpaController getObjetDAO() {
-        return objetDAO;
-    }
-
-    public static VenteJpaController getVenteDAO() {
-        return venteDAO;
+    
+    public int getSemaine() {
+        return (int) ((System.currentTimeMillis() - TEMPS_DEPART)/SEMAINE_MS);
     }
 
     @Override
@@ -67,9 +63,7 @@ public class VendeurAgent extends Agent {
         // Pour chaque produit
         // Rechercher tous les fournisseurs proposant ce produit
         // Puis Achter ce produit au fournisseur
-        /*System.out.println("Hello! Seller - agent " + this.getAID().getName() + " is ready");
-         Objet obj = (Objet) objetDAO.getEntityManager().find(Objet.class, 1);
-         System.out.println(obj.getNomObjet());*/
+        /*System.out.println("Hello! Seller - agent " + this.getAID().getName() + " is ready");*/
         
         // Enregistrement des comportements client
         addBehaviour(new AchatClientProduit());
