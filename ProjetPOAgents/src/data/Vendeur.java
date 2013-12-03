@@ -118,5 +118,9 @@ public class Vendeur implements Serializable {
     public void addDepense(int montant) {
         tresorerie -= montant;
     }
+    
+    public int getPrixParStrategie(Objet objet) {
+        return 0;
+    }
 
 }
