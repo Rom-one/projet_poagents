@@ -10,7 +10,6 @@ import dao.VenteJpaController;
 import data.Objet;
 import data.Vendeur;
 import jade.core.Agent;
-import java.util.HashMap;
 import java.util.List;
 import javax.persistence.Persistence;
 
@@ -20,15 +19,14 @@ import javax.persistence.Persistence;
  */
 public class VendeurAgent extends Agent {
 
-
     private final static int STOCK_MOYEN = 15000;
     private final static int TRESORIE_MOYENNE = 15000;
     
     private List<Objet> catalogue;
     private Vendeur vendeur;
     
-    private static final ObjetJpaController objetDAO = new ObjetJpaController(Persistence.createEntityManagerFactory("POAgentPU"));
-    private static final VenteJpaController venteDAO = new VenteJpaController(Persistence.createEntityManagerFactory("POAgentPU"));
+    private static  ObjetJpaController objetDAO = new ObjetJpaController(Persistence.createEntityManagerFactory("POAgentPU"));
+    private static  VenteJpaController venteDAO = new VenteJpaController(Persistence.createEntityManagerFactory("POAgentPU"));
 
     public List<Objet> getCatalogue() {
         return catalogue;
@@ -59,8 +57,8 @@ public class VendeurAgent extends Agent {
             // Rechercher tous les fournisseurs proposant ce produit
             // Puis Achter ce produit au fournisseur
         
-        System.out.println("Hello! Seller - agent " + this.getAID().getName() + " is ready");
+        /*System.out.println("Hello! Seller - agent " + this.getAID().getName() + " is ready");
         Objet obj = (Objet) objetDAO.getEntityManager().find(Objet.class, 1);
-        System.out.println(obj.getNomObjet());
+        System.out.println(obj.getNomObjet());*/
     }
 }
