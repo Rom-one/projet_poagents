@@ -5,18 +5,19 @@
  */
 package behaviour;
 
+import agent.VendeurAgent;
+import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.SimpleBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
 
 /**
  *
  * @version 0.1
  */
-public class HandleQueryPrice extends SimpleBehaviour {
+public class HandleQueryPrice extends OneShotBehaviour {
 
-    private final static MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.QUERY_REF);
+    private static final long serialVersionUID = 1L;
 
     public HandleQueryPrice(Agent agent) {
         super(agent);
@@ -24,23 +25,14 @@ public class HandleQueryPrice extends SimpleBehaviour {
 
     @Override
     public void action() {
-        ACLMessage aclMessage = myAgent.receive();
-        if (aclMessage != null) {
-            try {
-                String message = aclMessage.getContent();
-                System.out.println(myAgent.getLocalName() + ": I receive message query"
-                                   + aclMessage + "with content" + message);
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        } else {
-            this.block();
+        ACLMessage msg = new ACLMessage(ACLMessage.QUERY_REF);
+        AID[] providers = ((VendeurAgent) myAgent).searchProvider();
+        for (AID aid : providers) {
+            msg.addReceiver(aid);
+            //TODO récupérer la ref du produit qu'on veut vraiment acheter
+            msg.setContent("2");
+            myAgent.send(msg);
+            System.out.println("Requête de prix envoyé a " + aid);
         }
     }
-
-    @Override
-    public boolean done() {
-        return false;
-    }
-
 }

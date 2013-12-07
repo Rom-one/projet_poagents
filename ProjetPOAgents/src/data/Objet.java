@@ -34,8 +34,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @NamedQueries({
     @NamedQuery(name = "Objet.findAll", query = "SELECT o FROM Objet o"),
     @NamedQuery(name = "Objet.findByRefObjet", query = "SELECT o FROM Objet o WHERE o.refObjet = :refObjet"),
-    @NamedQuery(name = "Objet.findByNomObjet", query = "SELECT o FROM Objet o WHERE o.nomObjet = :nomObjet"),
-    @NamedQuery(name = "Objet.findByMarge", query = "SELECT o FROM Objet o WHERE o.marge = :marge")})
+    @NamedQuery(name = "Objet.findByNomObjet", query = "SELECT o FROM Objet o WHERE o.nomObjet = :nomObjet")})
 public class Objet implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -50,9 +49,6 @@ public class Objet implements Serializable {
     @Lob
     @Column(length = 65535)
     private String motCle;
-    @Basic(optional = false)
-    @Column(nullable = false)
-    private int marge;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "refObjet")
     private List<Vente> venteList;
     @JoinColumn(name = "idCategorie", referencedColumnName = "idCategorie")
@@ -68,10 +64,9 @@ public class Objet implements Serializable {
         this.refObjet = refObjet;
     }
 
-    public Objet(Integer refObjet, String nomObjet, int marge) {
+    public Objet(Integer refObjet, String nomObjet) {
         this.refObjet = refObjet;
         this.nomObjet = nomObjet;
-        this.marge = marge;
     }
 
     public Integer getRefObjet() {
@@ -96,14 +91,6 @@ public class Objet implements Serializable {
 
     public void setMotCle(String motCle) {
         this.motCle = motCle;
-    }
-
-    public int getMarge() {
-        return marge;
-    }
-
-    public void setMarge(int marge) {
-        this.marge = marge;
     }
 
     @XmlTransient
@@ -176,4 +163,5 @@ public class Objet implements Serializable {
         // Si on trouve autant de tags qu'on en recherchait, la condition est validée
         return (cpt == search_tags.length);
     }
+
 }

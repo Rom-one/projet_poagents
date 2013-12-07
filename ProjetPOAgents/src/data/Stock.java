@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package data;
 
 import java.io.Serializable;
@@ -41,6 +40,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Stock.findByQuantite", query = "SELECT s FROM Stock s WHERE s.quantite = :quantite"),
     @NamedQuery(name = "Stock.findByPrixAchat", query = "SELECT s FROM Stock s WHERE s.prixAchat = :prixAchat")})
 public class Stock implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -85,8 +85,8 @@ public class Stock implements Serializable {
         this.quantite = quantite;
         this.prixAchat = prixAchat;
     }
-    
-    public Stock(Date dateStockage, Date datePaiement,  int quantite, int prixAchat, Objet refObjet) {
+
+    public Stock(Date dateStockage, Date datePaiement, int quantite, int prixAchat, Objet refObjet) {
         this.dateStockage = dateStockage;
         this.datePaiement = datePaiement;
         this.quantite = quantite;

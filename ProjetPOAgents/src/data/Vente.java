@@ -37,8 +37,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Vente.findByIdVente", query = "SELECT v FROM Vente v WHERE v.idVente = :idVente"),
     @NamedQuery(name = "Vente.findByDateVente", query = "SELECT v FROM Vente v WHERE v.dateVente = :dateVente"),
     @NamedQuery(name = "Vente.findByPrixVente", query = "SELECT v FROM Vente v WHERE v.prixVente = :prixVente"),
-    @NamedQuery(name = "Vente.findByAcheteur", query = "SELECT v FROM Vente v WHERE v.acheteur = :acheteur"),
-    @NamedQuery(name = "Vente.findByObjet", query = "SELECT v FROM Vente v WHERE v.refObjet = :objet")})
+    @NamedQuery(name = "Vente.findByAcheteur", query = "SELECT v FROM Vente v WHERE v.acheteur = :acheteur")})
 public class Vente implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -75,10 +74,10 @@ public class Vente implements Serializable {
         this.acheteur = acheteur;
     }
 
-    public Vente(Date dateVente, Integer prixVente, String acheteur, Objet objet) {
+    public Vente(Date date, int prixVente, String acheteur, Objet objet) {
         this.dateVente = dateVente;
-        this.prixVente = prixVente;
         this.acheteur = acheteur;
+        this.prixVente = prixVente;
         this.refObjet = objet;
     }
 
