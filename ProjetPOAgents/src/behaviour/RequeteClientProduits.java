@@ -43,18 +43,20 @@ public class RequeteClientProduits extends CyclicBehaviour {
 
             for (Objet objet : catalogue) {
                 // Si le produit correspond à la recherche
-                if (objet.getIdCategorie().getTypeCategorie().equals(categorie) || "null".equals(categorie)
+                if ((objet.getIdCategorie().getTypeCategorie().equals(categorie) || "null".equals(categorie))
                         && (objet.getNomObjet().equals(nom) || "null".equals(nom))
                         && (objet.containsMotsCles(tags) || "null".equals(tags))) {
                     produits.add(objet);
                 }
             }
 
-            ACLMessage reply;
+            ACLMessage reply = request.createReply();
 
             if (!catalogue.isEmpty()) {
-                reply = new ACLMessage(ACLMessage.CONFIRM);
+                
+                reply.setPerformative(ACLMessage.CONFIRM);
                 reply.setOntology("reply-several-products");
+                
                 StringBuffer content = new StringBuffer("");
                 for (Objet produit : produits) {
 
@@ -71,7 +73,7 @@ public class RequeteClientProduits extends CyclicBehaviour {
                 
                 reply.setContent(content.toString());
             } else {
-                reply = new ACLMessage(ACLMessage.DISCONFIRM);
+                reply.setPerformative(ACLMessage.DISCONFIRM);
                 reply.setOntology("reply-several-products");
             }
 

@@ -5,7 +5,10 @@
  */
 package data;
 
+import agent.VendeurAgent;
+import dao.DAOFactory;
 import java.io.Serializable;
+import java.util.ArrayList;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -111,4 +114,31 @@ public class Vendeur implements Serializable {
         return "data.Vendeur[ idVendeur=" + idVendeur + " ]";
     }
 
+    public void addRecette(int montant) {
+        tresorerie += montant;
+    }
+
+    public void addDepense(int montant) {
+        tresorerie -= montant;
+    }
+
+    public int getPrixParStrategieHistorique(Objet objet) {
+        ArrayList<Vente> ventes = (ArrayList<Vente>) DAOFactory.getVenteDAO()
+                .getEntityManager()
+                .createNamedQuery("findByObjet")
+                .setParameter("objet", objet)
+                .getResultList();
+
+        int prix = 0;
+
+        int moyenne = 0;
+        for (Vente vente : ventes) {
+            if (VendeurAgent.getSemaine(vente.getDateVente()) == VendeurAgent.getSemaineCourante()) {
+                moyenne += vente.getPrixVente();
+            }
+        }
+        moyenne /= ventes.size();
+
+        return prix;
+    }
 }

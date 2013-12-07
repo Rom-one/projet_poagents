@@ -57,6 +57,7 @@ target/
 */.hg/*
 .hgignore
 ### NetBeans ###
+/src/META-INF/persistence.xml
 nbproject/
 build/
 doc/
