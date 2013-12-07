@@ -103,7 +103,7 @@ public class VendeurAgent extends Agent {
         addBehaviour(new AchatClientProduit());
         addBehaviour(new RequeteClientProduits());
 
-        addBehaviour(new SearchBetterProviderBehaviour(this));
+        //addBehaviour(new SearchBetterProviderBehaviour(this));
 
         // toute les 20 secondes on vérifie no stocks et notre trésorerie pour racheter des produit et ajuster nos marge
         addBehaviour(new TickerBehaviour(this, 1000) {
@@ -183,11 +183,7 @@ public class VendeurAgent extends Agent {
                 int prix = (int) (55 + Math.random() * (75 - 55 + 1));
                 for (int cpt = 0; cpt <= 5; cpt++) {
                     Vente vente = new Vente(new Date(later.getTime()), prix, "buyer", objet);
-                    try {
-                        DAOFactory.getVenteDAO().create(vente);
-                    } catch (IllegalOrphanException ex) {
-                        Logger.getLogger(VendeurAgent.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    DAOFactory.getVenteDAO().create(vente);
                 }
             }
         }

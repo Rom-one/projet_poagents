@@ -14,12 +14,10 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 
 /**
  *
- * @version 0.1
+ * @author Romain
  */
 public class VendeurJpaController implements Serializable {
 
@@ -101,9 +99,7 @@ public class VendeurJpaController implements Serializable {
     private List<Vendeur> findVendeurEntities(boolean all, int maxResults, int firstResult) {
         EntityManager em = getEntityManager();
         try {
-            CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            cq.select(cq.from(Vendeur.class));
-            Query q = em.createQuery(cq);
+            Query q = em.createQuery("select object(o) from Vendeur as o");
             if (!all) {
                 q.setMaxResults(maxResults);
                 q.setFirstResult(firstResult);
@@ -126,14 +122,11 @@ public class VendeurJpaController implements Serializable {
     public int getVendeurCount() {
         EntityManager em = getEntityManager();
         try {
-            CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            Root<Vendeur> rt = cq.from(Vendeur.class);
-            cq.select(em.getCriteriaBuilder().count(rt));
-            Query q = em.createQuery(cq);
+            Query q = em.createQuery("select count(o) from Vendeur as o");
             return ((Long) q.getSingleResult()).intValue();
         } finally {
             em.close();
         }
     }
-
+    
 }

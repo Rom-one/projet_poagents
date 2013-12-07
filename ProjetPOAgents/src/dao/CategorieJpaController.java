@@ -11,8 +11,6 @@ import data.Categorie;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import data.Objet;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +19,7 @@ import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @version 0.1
+ * @author Romain
  */
 public class CategorieJpaController implements Serializable {
 
@@ -153,9 +151,7 @@ public class CategorieJpaController implements Serializable {
     private List<Categorie> findCategorieEntities(boolean all, int maxResults, int firstResult) {
         EntityManager em = getEntityManager();
         try {
-            CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            cq.select(cq.from(Categorie.class));
-            Query q = em.createQuery(cq);
+            Query q = em.createQuery("select object(o) from Categorie as o");
             if (!all) {
                 q.setMaxResults(maxResults);
                 q.setFirstResult(firstResult);
@@ -178,14 +174,11 @@ public class CategorieJpaController implements Serializable {
     public int getCategorieCount() {
         EntityManager em = getEntityManager();
         try {
-            CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            Root<Categorie> rt = cq.from(Categorie.class);
-            cq.select(em.getCriteriaBuilder().count(rt));
-            Query q = em.createQuery(cq);
+            Query q = em.createQuery("select count(o) from Categorie as o");
             return ((Long) q.getSingleResult()).intValue();
         } finally {
             em.close();
         }
     }
-
+    
 }

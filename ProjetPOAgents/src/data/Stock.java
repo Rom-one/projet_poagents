@@ -65,8 +65,6 @@ public class Stock implements Serializable {
     @Basic(optional = false)
     @Column(nullable = false)
     private int prixAchat;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "idStock")
-    private Vente vente;
     @JoinColumn(name = "refObjet", referencedColumnName = "refObjet", nullable = false)
     @ManyToOne(optional = false)
     private Objet refObjet;
@@ -141,14 +139,6 @@ public class Stock implements Serializable {
 
     public void setPrixAchat(int prixAchat) {
         this.prixAchat = prixAchat;
-    }
-
-    public Vente getVente() {
-        return vente;
-    }
-
-    public void setVente(Vente vente) {
-        this.vente = vente;
     }
 
     public Objet getRefObjet() {

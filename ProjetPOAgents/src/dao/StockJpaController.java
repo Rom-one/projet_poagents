@@ -6,24 +6,19 @@
 
 package dao;
 
-import dao.exceptions.IllegalOrphanException;
 import dao.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-import data.Vente;
 import data.Objet;
 import data.Stock;
-import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @version 0.1
+ * @author Romain
  */
 public class StockJpaController implements Serializable {
 
@@ -41,26 +36,12 @@ public class StockJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Vente vente = stock.getVente();
-            if (vente != null) {
-                vente = em.getReference(vente.getClass(), vente.getIdVente());
-                stock.setVente(vente);
-            }
             Objet refObjet = stock.getRefObjet();
             if (refObjet != null) {
                 refObjet = em.getReference(refObjet.getClass(), refObjet.getRefObjet());
                 stock.setRefObjet(refObjet);
             }
             em.persist(stock);
-            if (vente != null) {
-                Stock oldIdStockOfVente = vente.getIdStock();
-                if (oldIdStockOfVente != null) {
-                    oldIdStockOfVente.setVente(null);
-                    oldIdStockOfVente = em.merge(oldIdStockOfVente);
-                }
-                vente.setIdStock(stock);
-                vente = em.merge(vente);
-            }
             if (refObjet != null) {
                 refObjet.getStockList().add(stock);
                 refObjet = em.merge(refObjet);
@@ -73,44 +54,19 @@ public class StockJpaController implements Serializable {
         }
     }
 
-    public void edit(Stock stock) throws IllegalOrphanException, NonexistentEntityException, Exception {
+    public void edit(Stock stock) throws NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
             Stock persistentStock = em.find(Stock.class, stock.getIdStock());
-            Vente venteOld = persistentStock.getVente();
-            Vente venteNew = stock.getVente();
             Objet refObjetOld = persistentStock.getRefObjet();
             Objet refObjetNew = stock.getRefObjet();
-            List<String> illegalOrphanMessages = null;
-            if (venteOld != null && !venteOld.equals(venteNew)) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("You must retain Vente " + venteOld + " since its idStock field is not nullable.");
-            }
-            if (illegalOrphanMessages != null) {
-                throw new IllegalOrphanException(illegalOrphanMessages);
-            }
-            if (venteNew != null) {
-                venteNew = em.getReference(venteNew.getClass(), venteNew.getIdVente());
-                stock.setVente(venteNew);
-            }
             if (refObjetNew != null) {
                 refObjetNew = em.getReference(refObjetNew.getClass(), refObjetNew.getRefObjet());
                 stock.setRefObjet(refObjetNew);
             }
             stock = em.merge(stock);
-            if (venteNew != null && !venteNew.equals(venteOld)) {
-                Stock oldIdStockOfVente = venteNew.getIdStock();
-                if (oldIdStockOfVente != null) {
-                    oldIdStockOfVente.setVente(null);
-                    oldIdStockOfVente = em.merge(oldIdStockOfVente);
-                }
-                venteNew.setIdStock(stock);
-                venteNew = em.merge(venteNew);
-            }
             if (refObjetOld != null && !refObjetOld.equals(refObjetNew)) {
                 refObjetOld.getStockList().remove(stock);
                 refObjetOld = em.merge(refObjetOld);
@@ -136,7 +92,7 @@ public class StockJpaController implements Serializable {
         }
     }
 
-    public void destroy(Integer id) throws IllegalOrphanException, NonexistentEntityException {
+    public void destroy(Integer id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -147,17 +103,6 @@ public class StockJpaController implements Serializable {
                 stock.getIdStock();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The stock with id " + id + " no longer exists.", enfe);
-            }
-            List<String> illegalOrphanMessages = null;
-            Vente venteOrphanCheck = stock.getVente();
-            if (venteOrphanCheck != null) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This Stock (" + stock + ") cannot be destroyed since the Vente " + venteOrphanCheck + " in its vente field has a non-nullable idStock field.");
-            }
-            if (illegalOrphanMessages != null) {
-                throw new IllegalOrphanException(illegalOrphanMessages);
             }
             Objet refObjet = stock.getRefObjet();
             if (refObjet != null) {
@@ -184,9 +129,7 @@ public class StockJpaController implements Serializable {
     private List<Stock> findStockEntities(boolean all, int maxResults, int firstResult) {
         EntityManager em = getEntityManager();
         try {
-            CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            cq.select(cq.from(Stock.class));
-            Query q = em.createQuery(cq);
+            Query q = em.createQuery("select object(o) from Stock as o");
             if (!all) {
                 q.setMaxResults(maxResults);
                 q.setFirstResult(firstResult);
@@ -209,14 +152,11 @@ public class StockJpaController implements Serializable {
     public int getStockCount() {
         EntityManager em = getEntityManager();
         try {
-            CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            Root<Stock> rt = cq.from(Stock.class);
-            cq.select(em.getCriteriaBuilder().count(rt));
-            Query q = em.createQuery(cq);
+            Query q = em.createQuery("select count(o) from Stock as o");
             return ((Long) q.getSingleResult()).intValue();
         } finally {
             em.close();
         }
     }
-
+    
 }

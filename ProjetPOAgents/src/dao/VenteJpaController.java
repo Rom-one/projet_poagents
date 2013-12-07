@@ -6,24 +6,19 @@
 
 package dao;
 
-import dao.exceptions.IllegalOrphanException;
 import dao.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import data.Objet;
-import data.Stock;
 import data.Vente;
-import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @version 0.1
+ * @author Romain
  */
 public class VenteJpaController implements Serializable {
 
@@ -36,21 +31,7 @@ public class VenteJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(Vente vente) throws IllegalOrphanException {
-        List<String> illegalOrphanMessages = null;
-        Stock idStockOrphanCheck = vente.getIdStock();
-        if (idStockOrphanCheck != null) {
-            Vente oldVenteOfIdStock = idStockOrphanCheck.getVente();
-            if (oldVenteOfIdStock != null) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("The Stock " + idStockOrphanCheck + " already has an item of type Vente whose idStock column cannot be null. Please make another selection for the idStock field.");
-            }
-        }
-        if (illegalOrphanMessages != null) {
-            throw new IllegalOrphanException(illegalOrphanMessages);
-        }
+    public void create(Vente vente) {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -60,19 +41,10 @@ public class VenteJpaController implements Serializable {
                 refObjet = em.getReference(refObjet.getClass(), refObjet.getRefObjet());
                 vente.setRefObjet(refObjet);
             }
-            Stock idStock = vente.getIdStock();
-            if (idStock != null) {
-                idStock = em.getReference(idStock.getClass(), idStock.getIdStock());
-                vente.setIdStock(idStock);
-            }
             em.persist(vente);
             if (refObjet != null) {
                 refObjet.getVenteList().add(vente);
                 refObjet = em.merge(refObjet);
-            }
-            if (idStock != null) {
-                idStock.setVente(vente);
-                idStock = em.merge(idStock);
             }
             em.getTransaction().commit();
         } finally {
@@ -82,7 +54,7 @@ public class VenteJpaController implements Serializable {
         }
     }
 
-    public void edit(Vente vente) throws IllegalOrphanException, NonexistentEntityException, Exception {
+    public void edit(Vente vente) throws NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -90,28 +62,9 @@ public class VenteJpaController implements Serializable {
             Vente persistentVente = em.find(Vente.class, vente.getIdVente());
             Objet refObjetOld = persistentVente.getRefObjet();
             Objet refObjetNew = vente.getRefObjet();
-            Stock idStockOld = persistentVente.getIdStock();
-            Stock idStockNew = vente.getIdStock();
-            List<String> illegalOrphanMessages = null;
-            if (idStockNew != null && !idStockNew.equals(idStockOld)) {
-                Vente oldVenteOfIdStock = idStockNew.getVente();
-                if (oldVenteOfIdStock != null) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("The Stock " + idStockNew + " already has an item of type Vente whose idStock column cannot be null. Please make another selection for the idStock field.");
-                }
-            }
-            if (illegalOrphanMessages != null) {
-                throw new IllegalOrphanException(illegalOrphanMessages);
-            }
             if (refObjetNew != null) {
                 refObjetNew = em.getReference(refObjetNew.getClass(), refObjetNew.getRefObjet());
                 vente.setRefObjet(refObjetNew);
-            }
-            if (idStockNew != null) {
-                idStockNew = em.getReference(idStockNew.getClass(), idStockNew.getIdStock());
-                vente.setIdStock(idStockNew);
             }
             vente = em.merge(vente);
             if (refObjetOld != null && !refObjetOld.equals(refObjetNew)) {
@@ -121,14 +74,6 @@ public class VenteJpaController implements Serializable {
             if (refObjetNew != null && !refObjetNew.equals(refObjetOld)) {
                 refObjetNew.getVenteList().add(vente);
                 refObjetNew = em.merge(refObjetNew);
-            }
-            if (idStockOld != null && !idStockOld.equals(idStockNew)) {
-                idStockOld.setVente(null);
-                idStockOld = em.merge(idStockOld);
-            }
-            if (idStockNew != null && !idStockNew.equals(idStockOld)) {
-                idStockNew.setVente(vente);
-                idStockNew = em.merge(idStockNew);
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -164,11 +109,6 @@ public class VenteJpaController implements Serializable {
                 refObjet.getVenteList().remove(vente);
                 refObjet = em.merge(refObjet);
             }
-            Stock idStock = vente.getIdStock();
-            if (idStock != null) {
-                idStock.setVente(null);
-                idStock = em.merge(idStock);
-            }
             em.remove(vente);
             em.getTransaction().commit();
         } finally {
@@ -189,9 +129,7 @@ public class VenteJpaController implements Serializable {
     private List<Vente> findVenteEntities(boolean all, int maxResults, int firstResult) {
         EntityManager em = getEntityManager();
         try {
-            CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            cq.select(cq.from(Vente.class));
-            Query q = em.createQuery(cq);
+            Query q = em.createQuery("select object(o) from Vente as o");
             if (!all) {
                 q.setMaxResults(maxResults);
                 q.setFirstResult(firstResult);
@@ -214,14 +152,11 @@ public class VenteJpaController implements Serializable {
     public int getVenteCount() {
         EntityManager em = getEntityManager();
         try {
-            CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            Root<Vente> rt = cq.from(Vente.class);
-            cq.select(em.getCriteriaBuilder().count(rt));
-            Query q = em.createQuery(cq);
+            Query q = em.createQuery("select count(o) from Vente as o");
             return ((Long) q.getSingleResult()).intValue();
         } finally {
             em.close();
         }
     }
-
+    
 }

@@ -11,19 +11,18 @@ import dao.exceptions.NonexistentEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import data.Categorie;
 import data.Objet;
-import data.Stock;
+import data.Vente;
 import java.util.ArrayList;
 import java.util.List;
+import data.Stock;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @version 0.1
+ * @author Romain
  */
 public class ObjetJpaController implements Serializable {
 
@@ -37,6 +36,9 @@ public class ObjetJpaController implements Serializable {
     }
 
     public void create(Objet objet) {
+        if (objet.getVenteList() == null) {
+            objet.setVenteList(new ArrayList<Vente>());
+        }
         if (objet.getStockList() == null) {
             objet.setStockList(new ArrayList<Stock>());
         }
@@ -49,6 +51,12 @@ public class ObjetJpaController implements Serializable {
                 idCategorie = em.getReference(idCategorie.getClass(), idCategorie.getIdCategorie());
                 objet.setIdCategorie(idCategorie);
             }
+            List<Vente> attachedVenteList = new ArrayList<Vente>();
+            for (Vente venteListVenteToAttach : objet.getVenteList()) {
+                venteListVenteToAttach = em.getReference(venteListVenteToAttach.getClass(), venteListVenteToAttach.getIdVente());
+                attachedVenteList.add(venteListVenteToAttach);
+            }
+            objet.setVenteList(attachedVenteList);
             List<Stock> attachedStockList = new ArrayList<Stock>();
             for (Stock stockListStockToAttach : objet.getStockList()) {
                 stockListStockToAttach = em.getReference(stockListStockToAttach.getClass(), stockListStockToAttach.getIdStock());
@@ -59,6 +67,15 @@ public class ObjetJpaController implements Serializable {
             if (idCategorie != null) {
                 idCategorie.getObjetList().add(objet);
                 idCategorie = em.merge(idCategorie);
+            }
+            for (Vente venteListVente : objet.getVenteList()) {
+                Objet oldRefObjetOfVenteListVente = venteListVente.getRefObjet();
+                venteListVente.setRefObjet(objet);
+                venteListVente = em.merge(venteListVente);
+                if (oldRefObjetOfVenteListVente != null) {
+                    oldRefObjetOfVenteListVente.getVenteList().remove(venteListVente);
+                    oldRefObjetOfVenteListVente = em.merge(oldRefObjetOfVenteListVente);
+                }
             }
             for (Stock stockListStock : objet.getStockList()) {
                 Objet oldRefObjetOfStockListStock = stockListStock.getRefObjet();
@@ -85,9 +102,19 @@ public class ObjetJpaController implements Serializable {
             Objet persistentObjet = em.find(Objet.class, objet.getRefObjet());
             Categorie idCategorieOld = persistentObjet.getIdCategorie();
             Categorie idCategorieNew = objet.getIdCategorie();
+            List<Vente> venteListOld = persistentObjet.getVenteList();
+            List<Vente> venteListNew = objet.getVenteList();
             List<Stock> stockListOld = persistentObjet.getStockList();
             List<Stock> stockListNew = objet.getStockList();
             List<String> illegalOrphanMessages = null;
+            for (Vente venteListOldVente : venteListOld) {
+                if (!venteListNew.contains(venteListOldVente)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain Vente " + venteListOldVente + " since its refObjet field is not nullable.");
+                }
+            }
             for (Stock stockListOldStock : stockListOld) {
                 if (!stockListNew.contains(stockListOldStock)) {
                     if (illegalOrphanMessages == null) {
@@ -103,6 +130,13 @@ public class ObjetJpaController implements Serializable {
                 idCategorieNew = em.getReference(idCategorieNew.getClass(), idCategorieNew.getIdCategorie());
                 objet.setIdCategorie(idCategorieNew);
             }
+            List<Vente> attachedVenteListNew = new ArrayList<Vente>();
+            for (Vente venteListNewVenteToAttach : venteListNew) {
+                venteListNewVenteToAttach = em.getReference(venteListNewVenteToAttach.getClass(), venteListNewVenteToAttach.getIdVente());
+                attachedVenteListNew.add(venteListNewVenteToAttach);
+            }
+            venteListNew = attachedVenteListNew;
+            objet.setVenteList(venteListNew);
             List<Stock> attachedStockListNew = new ArrayList<Stock>();
             for (Stock stockListNewStockToAttach : stockListNew) {
                 stockListNewStockToAttach = em.getReference(stockListNewStockToAttach.getClass(), stockListNewStockToAttach.getIdStock());
@@ -118,6 +152,17 @@ public class ObjetJpaController implements Serializable {
             if (idCategorieNew != null && !idCategorieNew.equals(idCategorieOld)) {
                 idCategorieNew.getObjetList().add(objet);
                 idCategorieNew = em.merge(idCategorieNew);
+            }
+            for (Vente venteListNewVente : venteListNew) {
+                if (!venteListOld.contains(venteListNewVente)) {
+                    Objet oldRefObjetOfVenteListNewVente = venteListNewVente.getRefObjet();
+                    venteListNewVente.setRefObjet(objet);
+                    venteListNewVente = em.merge(venteListNewVente);
+                    if (oldRefObjetOfVenteListNewVente != null && !oldRefObjetOfVenteListNewVente.equals(objet)) {
+                        oldRefObjetOfVenteListNewVente.getVenteList().remove(venteListNewVente);
+                        oldRefObjetOfVenteListNewVente = em.merge(oldRefObjetOfVenteListNewVente);
+                    }
+                }
             }
             for (Stock stockListNewStock : stockListNew) {
                 if (!stockListOld.contains(stockListNewStock)) {
@@ -160,6 +205,13 @@ public class ObjetJpaController implements Serializable {
                 throw new NonexistentEntityException("The objet with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
+            List<Vente> venteListOrphanCheck = objet.getVenteList();
+            for (Vente venteListOrphanCheckVente : venteListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Objet (" + objet + ") cannot be destroyed since the Vente " + venteListOrphanCheckVente + " in its venteList field has a non-nullable refObjet field.");
+            }
             List<Stock> stockListOrphanCheck = objet.getStockList();
             for (Stock stockListOrphanCheckStock : stockListOrphanCheck) {
                 if (illegalOrphanMessages == null) {
@@ -195,9 +247,7 @@ public class ObjetJpaController implements Serializable {
     private List<Objet> findObjetEntities(boolean all, int maxResults, int firstResult) {
         EntityManager em = getEntityManager();
         try {
-            CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            cq.select(cq.from(Objet.class));
-            Query q = em.createQuery(cq);
+            Query q = em.createQuery("select object(o) from Objet as o");
             if (!all) {
                 q.setMaxResults(maxResults);
                 q.setFirstResult(firstResult);
@@ -220,14 +270,11 @@ public class ObjetJpaController implements Serializable {
     public int getObjetCount() {
         EntityManager em = getEntityManager();
         try {
-            CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
-            Root<Objet> rt = cq.from(Objet.class);
-            cq.select(em.getCriteriaBuilder().count(rt));
-            Query q = em.createQuery(cq);
+            Query q = em.createQuery("select count(o) from Objet as o");
             return ((Long) q.getSingleResult()).intValue();
         } finally {
             em.close();
         }
     }
-
+    
 }
