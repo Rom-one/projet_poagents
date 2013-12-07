@@ -15,6 +15,15 @@ import jade.core.behaviours.SequentialBehaviour;
 public class SearchBetterProviderBehaviour extends SequentialBehaviour {
 
     private static final long serialVersionUID = 1L;
+    private double bestProvider;
+
+    public double getBestProvider() {
+        return bestProvider;
+    }
+
+    public void setBestProvider(double bestProvider) {
+        this.bestProvider = bestProvider;
+    }
 
     public SearchBetterProviderBehaviour(Agent agent) {
         super(agent);

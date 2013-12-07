@@ -5,8 +5,6 @@ import behaviour.RequeteClientProduit;
 import behaviour.RequeteClientProduits;
 import behaviour.SearchBetterProviderBehaviour;
 import dao.DAOFactory;
-import dao.ObjetJpaController;
-import dao.VenteJpaController;
 import dao.exceptions.IllegalOrphanException;
 import data.Objet;
 import data.Stock;
@@ -25,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.persistence.Persistence;
 
 /**
  *
@@ -44,9 +41,15 @@ public class VendeurAgent extends Agent {
 
     private List<Objet> catalogue;
     private Vendeur vendeur;
+    private AID bestProvider = null;
 
-    private static final ObjetJpaController objetDAO = new ObjetJpaController(Persistence.createEntityManagerFactory("POAgentPU"));
-    private static final VenteJpaController venteDAO = new VenteJpaController(Persistence.createEntityManagerFactory("POAgentPU"));
+    public AID getBestProvider() {
+        return bestProvider;
+    }
+
+    public void setBestProvider(AID bestProvider) {
+        this.bestProvider = bestProvider;
+    }
 
     public List<Objet> getCatalogue() {
         return DAOFactory.getObjetDAO().findObjetEntities();

@@ -19,12 +19,18 @@ class MultipleHandleInform extends ParallelBehaviour {
     private static final long serialVersionUID = 1L;
 
     public MultipleHandleInform(Agent myAgent) {
+        // On veut que tout les fournisseur répondent à notre demande WHEN_ALL donc..
         super(myAgent, WHEN_ALL);
-        AID[] providers = ((VendeurAgent) myAgent).searchProvider();
-        for (int i = 0; i < providers.length; i++) {
-            AID aid = providers[i];
-            addSubBehaviour(new HandleInform(myAgent, aid, STATE_READY));
-        }
-    }
 
+        //On veut trouver tout les agent fournisseurs
+        AID[] providers = ((VendeurAgent) myAgent).searchProvider();
+
+        // Données qu'utiliseront les subBehaviour pour partager l'informations du meilleur prix de fournisseur
+        ((VendeurAgent) myAgent).setBestProvider(null);
+        this.getParent().getDataStore().put("betterPrice", Double.MAX_VALUE);
+        for (AID aid : providers) {
+            addSubBehaviour(new HandleInform(myAgent, aid));
+        }
+
+    }
 }
