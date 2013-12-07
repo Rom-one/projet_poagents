@@ -5,6 +5,7 @@
  */
 package data;
 
+import agent.VendeurAgent;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
@@ -38,6 +39,8 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Objet.findByPrixVente", query = "SELECT o FROM Objet o WHERE o.prixVente = :prixVente")})
 public class Objet implements Serializable {
 
+    private static final double POURCENTAGE_PERTE = 0.40;
+    
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -155,6 +158,31 @@ public class Objet implements Serializable {
     @Override
     public String toString() {
         return "data.Objet[ refObjet=" + refObjet + " ]";
+    }
+    
+    // Prix de vente minimum (sans vendre à perte)
+    public int getPrixMinimum() {
+        int prix = 0;
+        for(Stock stock : stockList) 
+           if(stock.getPrixAchat() > prix)
+               prix = stock.getPrixAchat();
+        
+        // Si c'est la période de soldes, alors on peut vendre à perte
+        if(VendeurAgent.isSoldes(VendeurAgent.getSemaineCourante())) {
+           prix -= prix * POURCENTAGE_PERTE;
+        }
+        
+        return prix;
+    }
+    
+    public int getStockRestant() {
+        int nbventes = getVenteList().size();
+        int nbachats = 0;
+        
+        for(Stock stock : getStockList())
+            nbachats += stock.getQuantite();
+        
+        return nbachats - nbventes;
     }
 
     public boolean containsMotsCles(String buffer) {

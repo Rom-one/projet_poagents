@@ -1,6 +1,7 @@
 package agent;
 
 import behaviour.AchatClientProduit;
+import behaviour.MiseAJourMarge;
 import behaviour.RequeteClientProduit;
 import behaviour.RequeteClientProduits;
 import behaviour.SearchBetterProviderBehaviour;
@@ -64,7 +65,21 @@ public class VendeurAgent extends Agent {
     }
 
     public static int getSemaine(Date date) {
-        return (int) ((date.getTime() - TEMPS_DEPART) / SEMAINE_MS);
+        return (int) ((date.getTime() - TEMPS_DEPART) / (SEMAINE_MS * 7 * 24 * 60 * 60));
+    }
+
+    public static Date getDate(int semaine) {
+        Timestamp start = new Timestamp(TEMPS_DEPART);
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(start.getTime());
+        cal.add(Calendar.SECOND, 60 * 60 * 24 * 7 * semaine);
+        return cal.getTime();
+    }
+    
+    public static boolean isSoldes(int semaine) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(getDate(semaine));
+        return (cal.get(Calendar.MONTH) == Calendar.JANUARY || cal.get(Calendar.MONTH) == Calendar.FEBRUARY);
     }
 
     @Override
@@ -120,6 +135,19 @@ public class VendeurAgent extends Agent {
             fe.printStackTrace();
             System.err.println("Impossible d'enregistrer les services !! ou erreur FIPA");
         }
+
+        // Comportement mettant à jour la marge de chaque objet toutes les semaines
+        addBehaviour(new MiseAJourMarge(this,SEMAINE_MS));
+        
+        // toute les 20 secondes on vérifie no stocks et notre trésorerie pour racheter des produit et ajuster nos marge
+        addBehaviour(new TickerBehaviour(this, 20000) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onTick() {
+                //TODO update product margin in comparison to previous sales
+            }
+        });
     }
 
     @Override

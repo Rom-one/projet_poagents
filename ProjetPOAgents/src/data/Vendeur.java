@@ -9,6 +9,7 @@ import agent.VendeurAgent;
 import dao.DAOFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -121,24 +122,36 @@ public class Vendeur implements Serializable {
     public void addDepense(int montant) {
         tresorerie -= montant;
     }
+    
+    public void setMargeByStock(Objet objet) {
+        
+    }
 
-    public int getPrixParStrategieHistorique(Objet objet) {
+    // Augmenter le prix pour augmenter la marge
+    public void setMargeByPrix(Objet objet) {
         ArrayList<Vente> ventes = (ArrayList<Vente>) DAOFactory.getVenteDAO()
                 .getEntityManager()
-                .createNamedQuery("findByObjet")
+                .createNamedQuery("findByObjetAndSemaine")
                 .setParameter("objet", objet)
+                .setParameter("semaine1", VendeurAgent.getDate(VendeurAgent.getSemaineCourante() - 1))
+                .setParameter("semaine2", VendeurAgent.getSemaineCourante())
                 .getResultList();
 
-        int prix = 0;
-
-        int moyenne = 0;
-        for (Vente vente : ventes) {
-            if (VendeurAgent.getSemaine(vente.getDateVente()) == VendeurAgent.getSemaineCourante()) {
-                moyenne += vente.getPrixVente();
-            }
+        int prix = objet.getPrixVente();
+        
+        int nbventes = ventes.size();
+        int stock = objet.getStockRestant();
+        
+        double pourcentage = (double) (nbventes/stock);
+        
+        // Si on est presque en rupture de stock
+        if(pourcentage > 0.9) {
+            prix += prix * 0.1;
+            objet.setPrixVente(prix);
         }
-        moyenne /= ventes.size();
-
-        return prix;
+        else if((prix -= prix * 0.1) >= objet.getPrixMinimum()) {
+            objet.setPrixVente(prix);
+        }
     }
+    
 }

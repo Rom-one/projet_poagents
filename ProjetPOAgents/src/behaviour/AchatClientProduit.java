@@ -42,11 +42,13 @@ public class AchatClientProduit extends CyclicBehaviour {
 
             // Enregistrement de la vente
             Vente vente = new Vente(dateVente, prixVente, acheteur, objet);
+            
             try {
                 DAOFactory.getVenteDAO().create(vente);
             } catch (IllegalOrphanException ex) {
                 Logger.getLogger(AchatClientProduit.class.getName()).log(Level.SEVERE, null, ex);
             }
+
 
             // Enregistrement du paiement
             ((VendeurAgent) myAgent).getVendeur().addRecette(prixVente);
