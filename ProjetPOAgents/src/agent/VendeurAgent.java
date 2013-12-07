@@ -56,7 +56,15 @@ public class VendeurAgent extends Agent {
     }
 
     public static int getSemaine(Date date) {
-        return (int) ((date.getTime() - TEMPS_DEPART) / SEMAINE_MS);
+        return (int) ((date.getTime() - TEMPS_DEPART) / (SEMAINE_MS * 7 * 24 * 60 * 60));
+    }
+
+    public static Date getDate(int semaine) {
+        Timestamp start = new Timestamp(TEMPS_DEPART);
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(start.getTime());
+        cal.add(Calendar.SECOND, 60 * 60 * 24 * 7 * semaine);
+        return cal.getTime();
     }
 
     @Override
@@ -124,7 +132,7 @@ public class VendeurAgent extends Agent {
                 cal.setTimeInMillis(original.getTime());
                 cal.add(Calendar.SECOND, -(3600 * 24 * 7 * week));
                 Timestamp later = new Timestamp(cal.getTime().getTime());
-                
+
                 int prix = (int) (55 + Math.random() * (75 - 55 + 1));
                 for (int cpt = 0; cpt <= 5; cpt++) {
                     Vente vente = new Vente(new Date(later.getTime()), prix, "buyer", objet);

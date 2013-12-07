@@ -126,18 +126,24 @@ public class Vendeur implements Serializable {
     public int getPrixParStrategieHistorique(Objet objet) {
         ArrayList<Vente> ventes = (ArrayList<Vente>) DAOFactory.getVenteDAO()
                 .getEntityManager()
-                .createNamedQuery("findByObjet")
+                .createNamedQuery("findByObjetAndSemaine")
                 .setParameter("objet", objet)
+                .setParameter("semaine1", VendeurAgent.getDate(VendeurAgent.getSemaineCourante() - 1))
+                .setParameter("semaine2", VendeurAgent.getSemaineCourante())
                 .getResultList();
+        
+        Stock stock = (Stock) DAOFactory.getStockDAO()
+                .getEntityManager()
+                .createNamedQuery("findByObjetAndSemaine")
+                .setParameter("objet", objet)
+                .setParameter("semaine1", VendeurAgent.getDate(VendeurAgent.getSemaineCourante() - 1))
+                .setParameter("semaine2", VendeurAgent.getSemaineCourante())
+                .getSingleResult();
         
         int prix = 0;
         
-        int moyenne = 0;
-        for(Vente vente : ventes) {
-            if(VendeurAgent.getSemaine(vente.getDateVente()) == VendeurAgent.getSemaineCourante())
-            moyenne += vente.getPrixVente();
-        }
-        moyenne /= ventes.size();
+        int nb_objets_vendus = ventes.size();
+        int stokc_initial = stock.getQuantite();
         
         return prix;
     }

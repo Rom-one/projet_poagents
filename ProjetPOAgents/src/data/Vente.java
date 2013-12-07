@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package data;
 
 import java.io.Serializable;
@@ -36,8 +35,10 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Vente.findByDateVente", query = "SELECT v FROM Vente v WHERE v.dateVente = :dateVente"),
     @NamedQuery(name = "Vente.findByPrixVente", query = "SELECT v FROM Vente v WHERE v.prixVente = :prixVente"),
     @NamedQuery(name = "Vente.findByAcheteur", query = "SELECT v FROM Vente v WHERE v.acheteur = :acheteur"),
-    @NamedQuery(name = "Vente.findByObjet", query = "SELECT v FROM Vente v WHERE v.refObjet = :objet")})
+    @NamedQuery(name = "Vente.findByObjet", query = "SELECT v FROM Vente v WHERE v.refObjet = :objet"),
+    @NamedQuery(name = "Vente.findByObjetAndSemaine", query = "SELECT v FROM Vente v WHERE v.refObjet = :objet AND v.dateVente BETWEEN :semaine1 AND :semaine2")})
 public class Vente implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

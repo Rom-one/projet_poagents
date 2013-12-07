@@ -40,6 +40,7 @@ public class AchatClientProduit extends CyclicBehaviour {
             
             // Enregistrement de la vente
             Vente vente = new Vente(dateVente, prixVente, acheteur, objet);
+            objet.getVenteCollection().add(vente);
             DAOFactory.getVenteDAO().create(vente);
             
             // Enregistrement du paiement
