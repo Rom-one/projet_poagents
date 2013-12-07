@@ -40,6 +40,9 @@ public class VendeurAgent extends Agent {
     private final static int STOCK_MOYEN = 15000;
     private final static int TRESORIE_MOYENNE = 15000;
 
+    private final static int SEMAINE_MS = 1000;
+    private final static long TEMPS_DEPART = System.currentTimeMillis() - 5 * SEMAINE_MS;
+
     private final static String CUSTOMER_SERVICE_TYPE = "selling";
     private final static String PROVIDER_SERVICE_TYPE = "product";
     private AID[] providerAgents;
