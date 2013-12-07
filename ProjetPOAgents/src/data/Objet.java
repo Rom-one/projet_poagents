@@ -34,7 +34,8 @@ import javax.xml.bind.annotation.XmlTransient;
 @NamedQueries({
     @NamedQuery(name = "Objet.findAll", query = "SELECT o FROM Objet o"),
     @NamedQuery(name = "Objet.findByRefObjet", query = "SELECT o FROM Objet o WHERE o.refObjet = :refObjet"),
-    @NamedQuery(name = "Objet.findByNomObjet", query = "SELECT o FROM Objet o WHERE o.nomObjet = :nomObjet")})
+    @NamedQuery(name = "Objet.findByNomObjet", query = "SELECT o FROM Objet o WHERE o.nomObjet = :nomObjet"),
+    @NamedQuery(name = "Objet.findByPrixVente", query = "SELECT o FROM Objet o WHERE o.prixVente = :prixVente")})
 public class Objet implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -49,6 +50,9 @@ public class Objet implements Serializable {
     @Lob
     @Column(length = 65535)
     private String motCle;
+    @Basic(optional = false)
+    @Column(nullable = false)
+    private int prixVente;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "refObjet")
     private List<Vente> venteList;
     @JoinColumn(name = "idCategorie", referencedColumnName = "idCategorie")
@@ -64,9 +68,10 @@ public class Objet implements Serializable {
         this.refObjet = refObjet;
     }
 
-    public Objet(Integer refObjet, String nomObjet) {
+    public Objet(Integer refObjet, String nomObjet, int prixVente) {
         this.refObjet = refObjet;
         this.nomObjet = nomObjet;
+        this.prixVente = prixVente;
     }
 
     public Integer getRefObjet() {
@@ -91,6 +96,14 @@ public class Objet implements Serializable {
 
     public void setMotCle(String motCle) {
         this.motCle = motCle;
+    }
+
+    public int getPrixVente() {
+        return prixVente;
+    }
+
+    public void setPrixVente(int prixVente) {
+        this.prixVente = prixVente;
     }
 
     @XmlTransient

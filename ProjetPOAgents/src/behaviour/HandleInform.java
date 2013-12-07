@@ -53,7 +53,22 @@ public class HandleInform extends SimpleBehaviour {
         if (msg != null) {
             if (((VendeurAgent) myAgent).isAProvider(msg.getSender())) {
                 String content = msg.getContent();
+                double price = 0;
+                String betterPriceString = null;
+                double betterPrice = 0;
+                try {
+                    price = Double.valueOf(content);
+                    betterPriceString = (String) this.getParent().getDataStore().get("betterPrice");
+                    betterPrice = Double.valueOf(betterPriceString);
+                } catch (NumberFormatException e) {
+                    System.err.println("Prix reçu mal écrit !");
+                }
 
+                if (price > betterPrice) {
+                    this.getParent().getDataStore().put("betterPrice", String.valueOf(price));
+                    this.getParent().getDataStore().put("betterProvider", msg.getSender());
+                }
+                finished = true;
             }
         } else {
             block();
