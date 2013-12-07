@@ -81,6 +81,14 @@ public class Stock implements Serializable {
         this.quantite = quantite;
         this.prixAchat = prixAchat;
     }
+    
+    public Stock(Date dateStockage, Date datePaiement,  int quantite, int prixAchat, Objet refObjet) {
+        this.dateStockage = dateStockage;
+        this.datePaiement = datePaiement;
+        this.quantite = quantite;
+        this.prixAchat = prixAchat;
+        this.refObjet = refObjet;
+    }
 
     public Integer getIdStock() {
         return idStock;

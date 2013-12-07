@@ -35,7 +35,7 @@ public class AchatClientProduit extends CyclicBehaviour {
             String [] buffer = request.getContent().split(",");
             Objet objet = DAOFactory.getObjetDAO().findObjet(Integer.valueOf(buffer[0]));
             Integer prixVente = Integer.valueOf(buffer[1]);
-            String acheteur = request.getSender().toString();
+            String acheteur = request.getSender().getName().toString();
             Date dateVente = new Date();
             
             // Enregistrement de la vente
@@ -43,7 +43,15 @@ public class AchatClientProduit extends CyclicBehaviour {
             DAOFactory.getVenteDAO().create(vente);
             
             // Enregistrement du paiement
-            ((VendeurAgent) this.myAgent).getVendeur().addRecette(prixVente);
+            ((VendeurAgent) myAgent).getVendeur().addRecette(prixVente);
+            
+            // Confirmation de l'achat
+            ACLMessage reply = request.createReply();
+            reply.setPerformative(ACLMessage.INFORM);
+            reply.setOntology("transaction-success");
+            reply.setContent("Transaction réussie: "+objet.getNomObjet()+" acheté pour "+prixVente+"€");
+            
+            myAgent.send(reply);
         } else {
             block();
         }

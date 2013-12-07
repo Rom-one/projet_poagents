@@ -23,10 +23,9 @@ public class RequeteClientProduit extends CyclicBehaviour {
         // Template destiné à identifier les requêtes pour un produit donné
         MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.QUERY_REF),
                 MessageTemplate.MatchOntology("request-one-product"));
-
+        
         // Réception du message
         ACLMessage request = myAgent.receive(mt);
-
         if (request != null) {
             // Catalogue du vendeur
             ArrayList<Objet> catalogue = (ArrayList<Objet>) ((VendeurAgent) this.myAgent).getCatalogue();
@@ -43,20 +42,21 @@ public class RequeteClientProduit extends CyclicBehaviour {
             int prix = 42;
             // Définir la stratégie à adopter pour le prix
             
-            ACLMessage reply = null;
-            if (produit == null) {
-                reply = new ACLMessage(ACLMessage.CONFIRM);
+            ACLMessage reply = request.createReply();
+            
+            if (produit != null) {
+                reply.setPerformative(ACLMessage.CONFIRM);
                 reply.setOntology("reply-one-product");
                 reply.setContent(String.valueOf(prix));
             } else {
-                reply = new ACLMessage(ACLMessage.DISCONFIRM);
+                reply.setPerformative(ACLMessage.DISCONFIRM);
                 reply.setOntology("reply-one-product");
             }
 
             myAgent.send(reply);
             
         } else {
-            block();
+           block();
         }
 
     }

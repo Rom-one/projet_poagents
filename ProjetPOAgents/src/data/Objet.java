@@ -161,7 +161,7 @@ public class Objet implements Serializable {
         // Mots-clés recherchés
         String[] search_tags = buffer.split("/");
         // Mots-clés de l'objet
-        String[] tags = motCle.split(";");
+        String[] tags = motCle.split(",");
 
         int cpt = 0;
         // On recherche chaque tag dans la liste de tags de l'objet

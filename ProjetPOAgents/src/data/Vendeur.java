@@ -6,6 +6,7 @@
 
 package data;
 
+import agent.VendeurAgent;
 import dao.DAOFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -133,6 +134,7 @@ public class Vendeur implements Serializable {
         
         int moyenne = 0;
         for(Vente vente : ventes) {
+            if(VendeurAgent.getSemaine(vente.getDateVente()) == VendeurAgent.getSemaineCourante())
             moyenne += vente.getPrixVente();
         }
         moyenne /= ventes.size();
