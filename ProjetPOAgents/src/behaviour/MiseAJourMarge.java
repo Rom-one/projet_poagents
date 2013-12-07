@@ -27,7 +27,8 @@ public class MiseAJourMarge extends TickerBehaviour {
         ArrayList<Objet> catalogue = (ArrayList<Objet>) ((VendeurAgent) this.myAgent).getCatalogue();
         
         for(Objet objet : catalogue) {
-            ((VendeurAgent) this.myAgent).getVendeur().setMargeSelonStrategie(objet);
+            // Décider de la strat à adopter
+            ((VendeurAgent) this.myAgent).getVendeur().setMargeByPrix(objet);
         }
     }
 

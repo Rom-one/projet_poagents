@@ -122,8 +122,13 @@ public class Vendeur implements Serializable {
     public void addDepense(int montant) {
         tresorerie -= montant;
     }
+    
+    public void setMargeByStock(Objet objet) {
+        
+    }
 
-    public void setMargeSelonStrategie(Objet objet) {
+    // Augmenter le prix pour augmenter la marge
+    public void setMargeByPrix(Objet objet) {
         ArrayList<Vente> ventes = (ArrayList<Vente>) DAOFactory.getVenteDAO()
                 .getEntityManager()
                 .createNamedQuery("findByObjetAndSemaine")
@@ -132,18 +137,20 @@ public class Vendeur implements Serializable {
                 .setParameter("semaine2", VendeurAgent.getSemaineCourante())
                 .getResultList();
 
-        int marge = objet.getMarge();
+        int prix = objet.getPrixVente();
         
         int nbventes = ventes.size();
         int stock = objet.getStockRestant();
         
         double pourcentage = (double) (nbventes/stock);
         
+        // Si on est presque en rupture de stock
         if(pourcentage > 0.9) {
-            
+            prix += prix * 0.1;
+            objet.setPrixVente(prix);
         }
-        else {
-            
+        else if((prix -= prix * 0.1) >= objet.getPrixMinimum()) {
+            objet.setPrixVente(prix);
         }
     }
     

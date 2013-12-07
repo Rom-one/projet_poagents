@@ -5,6 +5,7 @@
  */
 package data;
 
+import agent.VendeurAgent;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
@@ -35,9 +36,11 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Objet.findAll", query = "SELECT o FROM Objet o"),
     @NamedQuery(name = "Objet.findByRefObjet", query = "SELECT o FROM Objet o WHERE o.refObjet = :refObjet"),
     @NamedQuery(name = "Objet.findByNomObjet", query = "SELECT o FROM Objet o WHERE o.nomObjet = :nomObjet"),
-    @NamedQuery(name = "Objet.findByMarge", query = "SELECT o FROM Objet o WHERE o.marge = :marge")})
+    @NamedQuery(name = "Objet.findByPrixVente", query = "SELECT o FROM Objet o WHERE o.prixVente = :prixVente")})
 public class Objet implements Serializable {
 
+    private static final double POURCENTAGE_PERTE = 0.40;
+    
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,7 +55,7 @@ public class Objet implements Serializable {
     private String motCle;
     @Basic(optional = false)
     @Column(nullable = false)
-    private int marge;
+    private int prixVente;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "refObjet")
     private List<Vente> venteList;
     @JoinColumn(name = "idCategorie", referencedColumnName = "idCategorie")
@@ -68,10 +71,10 @@ public class Objet implements Serializable {
         this.refObjet = refObjet;
     }
 
-    public Objet(Integer refObjet, String nomObjet, int marge) {
+    public Objet(Integer refObjet, String nomObjet, int prixVente) {
         this.refObjet = refObjet;
         this.nomObjet = nomObjet;
-        this.marge = marge;
+        this.prixVente = prixVente;
     }
 
     public Integer getRefObjet() {
@@ -98,12 +101,12 @@ public class Objet implements Serializable {
         this.motCle = motCle;
     }
 
-    public int getMarge() {
-        return marge;
+    public int getPrixVente() {
+        return prixVente;
     }
 
-    public void setMarge(int marge) {
-        this.marge = marge;
+    public void setPrixVente(int prixVente) {
+        this.prixVente = prixVente;
     }
 
     @XmlTransient
@@ -157,6 +160,21 @@ public class Objet implements Serializable {
         return "data.Objet[ refObjet=" + refObjet + " ]";
     }
     
+    // Prix de vente minimum (sans vendre à perte)
+    public int getPrixMinimum() {
+        int prix = 0;
+        for(Stock stock : stockList) 
+           if(stock.getPrixAchat() > prix)
+               prix = stock.getPrixAchat();
+        
+        // Si c'est la période de soldes, alors on peut vendre à perte
+        if(VendeurAgent.isSoldes(VendeurAgent.getSemaineCourante())) {
+           prix -= prix * POURCENTAGE_PERTE;
+        }
+        
+        return prix;
+    }
+    
     public int getStockRestant() {
         int nbventes = getVenteList().size();
         int nbachats = 0;
@@ -186,4 +204,5 @@ public class Objet implements Serializable {
         // Si on trouve autant de tags qu'on en recherchait, la condition est validée
         return (cpt == search_tags.length);
     }
+
 }

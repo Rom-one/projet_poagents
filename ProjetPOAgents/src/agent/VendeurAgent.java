@@ -1,14 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package agent;
 
 import behaviour.AchatClientProduit;
 import behaviour.MiseAJourMarge;
 import behaviour.RequeteClientProduit;
 import behaviour.RequeteClientProduits;
+import behaviour.SearchBetterProviderBehaviour;
 import dao.DAOFactory;
 import dao.ObjetJpaController;
 import dao.VenteJpaController;
@@ -43,10 +39,9 @@ public class VendeurAgent extends Agent {
 
     private final static int SEMAINE_MS = 1000;
     private final static long TEMPS_DEPART = System.currentTimeMillis() - 5 * SEMAINE_MS;
-    
+
     private final static String CUSTOMER_SERVICE_TYPE = "selling";
     private final static String PROVIDER_SERVICE_TYPE = "product";
-    private AID[] providerAgents;
 
     private List<Objet> catalogue;
     private Vendeur vendeur;
@@ -77,6 +72,12 @@ public class VendeurAgent extends Agent {
         cal.add(Calendar.SECOND, 60 * 60 * 24 * 7 * semaine);
         return cal.getTime();
     }
+    
+    public static boolean isSoldes(int semaine) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(getDate(semaine));
+        return (cal.get(Calendar.MONTH) == Calendar.JANUARY || cal.get(Calendar.MONTH) == Calendar.FEBRUARY);
+    }
 
     @Override
     protected void setup() {
@@ -99,32 +100,32 @@ public class VendeurAgent extends Agent {
         addBehaviour(new AchatClientProduit());
         addBehaviour(new RequeteClientProduits());
 
+        addBehaviour(new SearchBetterProviderBehaviour(this));
+
+        // toute les 20 secondes on vérifie no stocks et notre trésorerie pour racheter des produit et ajuster nos marge
+        addBehaviour(new TickerBehaviour(this, 1000) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onTick() {
+                //TODO update product margin in comparison to previous sales
+            }
+        });
+
         // Enregistrement du service de vente d'objets
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(getAID());
+        searchProvider();
 
         ServiceDescription sd = new ServiceDescription();
+        sd.setType(CUSTOMER_SERVICE_TYPE);
+        sd.setName("Vente de produits");
+        dfd.addServices(sd);
+
+        sd = new ServiceDescription();
         sd.setType(PROVIDER_SERVICE_TYPE);
-        DFAgentDescription[] result = null;
-        try {
-            result = DFService.search(this, dfd);
-        } catch (FIPAException ex) {
-            Logger.getLogger(VendeurAgent.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        providerAgents = new AID[result.length];
-        for (int i = 0; i < result.length; i++) {
-            providerAgents[i] = result[i].getName();
-        }
-
-        ServiceDescription sd1 = new ServiceDescription();
-        sd1.setType(CUSTOMER_SERVICE_TYPE);
-        sd1.setName("Vente de produits");
-        dfd.addServices(sd1);
-
-        ServiceDescription sd2 = new ServiceDescription();
-        sd2.setType(PROVIDER_SERVICE_TYPE);
-        sd2.setName("product");
-        dfd.addServices(sd2);
+        sd.setName("Negociations avec le fournisseur");
+        dfd.addServices(sd);
         try {
             DFService.register(this, dfd);
         } catch (FIPAException fe) {
@@ -187,5 +188,39 @@ public class VendeurAgent extends Agent {
                 }
             }
         }
+    }
+
+    public AID[] searchProvider() {
+        DFAgentDescription dfd = new DFAgentDescription();
+        AID[] providerAgents = null;
+
+        ServiceDescription sd = new ServiceDescription();
+        sd.setType(PROVIDER_SERVICE_TYPE);
+        dfd.addServices(sd);
+        DFAgentDescription[] result;
+        try {
+            result = DFService.search(this, dfd);
+            providerAgents = new AID[result.length];
+            for (int i = 0; i < result.length; i++) {
+                providerAgents[i] = result[i].getName();
+            }
+        } catch (FIPAException ex) {
+            Logger.getLogger(VendeurAgent.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (NullPointerException np) {
+            System.err.println("Aucun agents provider dans le DF");
+        }
+        return providerAgents;
+    }
+
+    /*
+     * On vérifie si l'agent passé en paramètre fait partie de la liste des fournisseurs
+     */
+    public boolean isAProvider(AID agent) {
+        for (AID provider : searchProvider()) {
+            if (provider.equals(agent)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

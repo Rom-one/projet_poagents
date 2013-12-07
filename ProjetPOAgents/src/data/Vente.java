@@ -76,10 +76,10 @@ public class Vente implements Serializable {
         this.acheteur = acheteur;
     }
 
-    public Vente(Date dateVente, Integer prixVente, String acheteur, Objet objet) {
+    public Vente(Date date, int prixVente, String acheteur, Objet objet) {
         this.dateVente = dateVente;
-        this.prixVente = prixVente;
         this.acheteur = acheteur;
+        this.prixVente = prixVente;
         this.refObjet = objet;
     }
 
