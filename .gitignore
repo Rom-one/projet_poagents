@@ -248,3 +248,4 @@ build
 *.xcodeproj/*
 !*.xcodeproj/project.pbxproj
 !*.xcworkspace/contents.xcworkspacedata
+ProjetPOAgents/src/META-INF/persistence.xml
