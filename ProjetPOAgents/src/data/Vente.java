@@ -73,7 +73,7 @@ public class Vente implements Serializable {
     }
 
     public Vente(Date date, int prixVente, String acheteur, Objet objet) {
-        this.dateVente = dateVente;
+        this.dateVente = date;
         this.acheteur = acheteur;
         this.prixVente = prixVente;
         this.refObjet = objet;
