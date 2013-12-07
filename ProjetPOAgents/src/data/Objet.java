@@ -3,10 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package data;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -37,7 +38,6 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Objet.findByNomObjet", query = "SELECT o FROM Objet o WHERE o.nomObjet = :nomObjet"),
     @NamedQuery(name = "Objet.findByMarge", query = "SELECT o FROM Objet o WHERE o.marge = :marge")})
 public class Objet implements Serializable {
-
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,12 +54,12 @@ public class Objet implements Serializable {
     @Column(nullable = false)
     private int marge;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "refObjet")
-    private Collection<Vente> venteCollection;
+    private List<Vente> venteList;
     @JoinColumn(name = "idCategorie", referencedColumnName = "idCategorie")
     @ManyToOne
     private Categorie idCategorie;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "refObjet")
-    private Collection<Stock> stockCollection;
+    private List<Stock> stockList;
 
     public Objet() {
     }
@@ -107,12 +107,12 @@ public class Objet implements Serializable {
     }
 
     @XmlTransient
-    public Collection<Vente> getVenteCollection() {
-        return venteCollection;
+    public List<Vente> getVenteList() {
+        return venteList;
     }
 
-    public void setVenteCollection(Collection<Vente> venteCollection) {
-        this.venteCollection = venteCollection;
+    public void setVenteList(List<Vente> venteList) {
+        this.venteList = venteList;
     }
 
     public Categorie getIdCategorie() {
@@ -124,12 +124,12 @@ public class Objet implements Serializable {
     }
 
     @XmlTransient
-    public Collection<Stock> getStockCollection() {
-        return stockCollection;
+    public List<Stock> getStockList() {
+        return stockList;
     }
 
-    public void setStockCollection(Collection<Stock> stockCollection) {
-        this.stockCollection = stockCollection;
+    public void setStockList(List<Stock> stockList) {
+        this.stockList = stockList;
     }
 
     @Override
@@ -155,26 +155,6 @@ public class Objet implements Serializable {
     @Override
     public String toString() {
         return "data.Objet[ refObjet=" + refObjet + " ]";
-    }
-
-    public boolean containsMotsCles(String buffer) {
-        // Mots-clés recherchés
-        String[] search_tags = buffer.split("/");
-        // Mots-clés de l'objet
-        String[] tags = motCle.split(";");
-
-        int cpt = 0;
-        // On recherche chaque tag dans la liste de tags de l'objet
-        for (String search_tag : search_tags) {
-            for (String tag : tags) {
-                if(search_tag.toLowerCase().equals(tag.toLowerCase())) {
-                    cpt++;
-                }
-            }
-        }
-        
-        // Si on trouve autant de tags qu'on en recherchait, la condition est validée
-        return (cpt == search_tags.length);
     }
 
 }

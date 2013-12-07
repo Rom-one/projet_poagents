@@ -9,6 +9,7 @@ package data;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,6 +19,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -62,6 +64,8 @@ public class Stock implements Serializable {
     @Basic(optional = false)
     @Column(nullable = false)
     private int prixAchat;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "idStock")
+    private Vente vente;
     @JoinColumn(name = "refObjet", referencedColumnName = "refObjet", nullable = false)
     @ManyToOne(optional = false)
     private Objet refObjet;
@@ -128,6 +132,14 @@ public class Stock implements Serializable {
 
     public void setPrixAchat(int prixAchat) {
         this.prixAchat = prixAchat;
+    }
+
+    public Vente getVente() {
+        return vente;
+    }
+
+    public void setVente(Vente vente) {
+        this.vente = vente;
     }
 
     public Objet getRefObjet() {

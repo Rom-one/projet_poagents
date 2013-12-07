@@ -3,7 +3,6 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package data;
 
 import java.io.Serializable;
@@ -18,9 +17,11 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -28,7 +29,8 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @version 0.1
  */
 @Entity
-@Table(catalog = "db_poagent", schema = "")
+@Table(catalog = "db_poagent", schema = "", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"idStock"})})
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Vente.findAll", query = "SELECT v FROM Vente v"),
@@ -37,6 +39,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Vente.findByPrixVente", query = "SELECT v FROM Vente v WHERE v.prixVente = :prixVente"),
     @NamedQuery(name = "Vente.findByAcheteur", query = "SELECT v FROM Vente v WHERE v.acheteur = :acheteur")})
 public class Vente implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,6 +57,9 @@ public class Vente implements Serializable {
     @JoinColumn(name = "refObjet", referencedColumnName = "refObjet", nullable = false)
     @ManyToOne(optional = false)
     private Objet refObjet;
+    @JoinColumn(name = "idStock", referencedColumnName = "idStock", nullable = false)
+    @OneToOne(optional = false)
+    private Stock idStock;
 
     public Vente() {
     }
@@ -68,11 +74,11 @@ public class Vente implements Serializable {
         this.acheteur = acheteur;
     }
 
-    public Vente(Date dateVente, Integer prixVente, String acheteur, Objet refObjet) {
+    public Vente(Date dateVente, Integer prixVente, String acheteur, Objet objet) {
         this.dateVente = dateVente;
         this.prixVente = prixVente;
         this.acheteur = acheteur;
-        this.refObjet = refObjet;
+        this.refObjet = objet;
     }
 
     public Integer getIdVente() {
@@ -113,6 +119,14 @@ public class Vente implements Serializable {
 
     public void setRefObjet(Objet refObjet) {
         this.refObjet = refObjet;
+    }
+
+    public Stock getIdStock() {
+        return idStock;
+    }
+
+    public void setIdStock(Stock idStock) {
+        this.idStock = idStock;
     }
 
     @Override
