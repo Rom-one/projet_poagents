@@ -1,23 +1,23 @@
-package dao;
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
+package dao;
+
+import dao.exceptions.NonexistentEntityException;
 import data.Categorie;
-import data.Objet;
-import data.exceptions.NonexistentEntityException;
 import java.io.Serializable;
+import javax.persistence.Query;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import data.Objet;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 
 /**
  *
@@ -35,27 +35,27 @@ public class CategorieJpaController implements Serializable {
     }
 
     public void create(Categorie categorie) {
-        if (categorie.getObjetCollection() == null) {
-            categorie.setObjetCollection(new ArrayList<Objet>());
+        if (categorie.getObjetList() == null) {
+            categorie.setObjetList(new ArrayList<Objet>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Collection<Objet> attachedObjetCollection = new ArrayList<Objet>();
-            for (Objet objetCollectionObjetToAttach : categorie.getObjetCollection()) {
-                objetCollectionObjetToAttach = em.getReference(objetCollectionObjetToAttach.getClass(), objetCollectionObjetToAttach.getRefObjet());
-                attachedObjetCollection.add(objetCollectionObjetToAttach);
+            List<Objet> attachedObjetList = new ArrayList<Objet>();
+            for (Objet objetListObjetToAttach : categorie.getObjetList()) {
+                objetListObjetToAttach = em.getReference(objetListObjetToAttach.getClass(), objetListObjetToAttach.getRefObjet());
+                attachedObjetList.add(objetListObjetToAttach);
             }
-            categorie.setObjetCollection(attachedObjetCollection);
+            categorie.setObjetList(attachedObjetList);
             em.persist(categorie);
-            for (Objet objetCollectionObjet : categorie.getObjetCollection()) {
-                Categorie oldIdCategorieOfObjetCollectionObjet = objetCollectionObjet.getIdCategorie();
-                objetCollectionObjet.setIdCategorie(categorie);
-                objetCollectionObjet = em.merge(objetCollectionObjet);
-                if (oldIdCategorieOfObjetCollectionObjet != null) {
-                    oldIdCategorieOfObjetCollectionObjet.getObjetCollection().remove(objetCollectionObjet);
-                    oldIdCategorieOfObjetCollectionObjet = em.merge(oldIdCategorieOfObjetCollectionObjet);
+            for (Objet objetListObjet : categorie.getObjetList()) {
+                Categorie oldIdCategorieOfObjetListObjet = objetListObjet.getIdCategorie();
+                objetListObjet.setIdCategorie(categorie);
+                objetListObjet = em.merge(objetListObjet);
+                if (oldIdCategorieOfObjetListObjet != null) {
+                    oldIdCategorieOfObjetListObjet.getObjetList().remove(objetListObjet);
+                    oldIdCategorieOfObjetListObjet = em.merge(oldIdCategorieOfObjetListObjet);
                 }
             }
             em.getTransaction().commit();
@@ -72,30 +72,30 @@ public class CategorieJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             Categorie persistentCategorie = em.find(Categorie.class, categorie.getIdCategorie());
-            Collection<Objet> objetCollectionOld = persistentCategorie.getObjetCollection();
-            Collection<Objet> objetCollectionNew = categorie.getObjetCollection();
-            Collection<Objet> attachedObjetCollectionNew = new ArrayList<Objet>();
-            for (Objet objetCollectionNewObjetToAttach : objetCollectionNew) {
-                objetCollectionNewObjetToAttach = em.getReference(objetCollectionNewObjetToAttach.getClass(), objetCollectionNewObjetToAttach.getRefObjet());
-                attachedObjetCollectionNew.add(objetCollectionNewObjetToAttach);
+            List<Objet> objetListOld = persistentCategorie.getObjetList();
+            List<Objet> objetListNew = categorie.getObjetList();
+            List<Objet> attachedObjetListNew = new ArrayList<Objet>();
+            for (Objet objetListNewObjetToAttach : objetListNew) {
+                objetListNewObjetToAttach = em.getReference(objetListNewObjetToAttach.getClass(), objetListNewObjetToAttach.getRefObjet());
+                attachedObjetListNew.add(objetListNewObjetToAttach);
             }
-            objetCollectionNew = attachedObjetCollectionNew;
-            categorie.setObjetCollection(objetCollectionNew);
+            objetListNew = attachedObjetListNew;
+            categorie.setObjetList(objetListNew);
             categorie = em.merge(categorie);
-            for (Objet objetCollectionOldObjet : objetCollectionOld) {
-                if (!objetCollectionNew.contains(objetCollectionOldObjet)) {
-                    objetCollectionOldObjet.setIdCategorie(null);
-                    objetCollectionOldObjet = em.merge(objetCollectionOldObjet);
+            for (Objet objetListOldObjet : objetListOld) {
+                if (!objetListNew.contains(objetListOldObjet)) {
+                    objetListOldObjet.setIdCategorie(null);
+                    objetListOldObjet = em.merge(objetListOldObjet);
                 }
             }
-            for (Objet objetCollectionNewObjet : objetCollectionNew) {
-                if (!objetCollectionOld.contains(objetCollectionNewObjet)) {
-                    Categorie oldIdCategorieOfObjetCollectionNewObjet = objetCollectionNewObjet.getIdCategorie();
-                    objetCollectionNewObjet.setIdCategorie(categorie);
-                    objetCollectionNewObjet = em.merge(objetCollectionNewObjet);
-                    if (oldIdCategorieOfObjetCollectionNewObjet != null && !oldIdCategorieOfObjetCollectionNewObjet.equals(categorie)) {
-                        oldIdCategorieOfObjetCollectionNewObjet.getObjetCollection().remove(objetCollectionNewObjet);
-                        oldIdCategorieOfObjetCollectionNewObjet = em.merge(oldIdCategorieOfObjetCollectionNewObjet);
+            for (Objet objetListNewObjet : objetListNew) {
+                if (!objetListOld.contains(objetListNewObjet)) {
+                    Categorie oldIdCategorieOfObjetListNewObjet = objetListNewObjet.getIdCategorie();
+                    objetListNewObjet.setIdCategorie(categorie);
+                    objetListNewObjet = em.merge(objetListNewObjet);
+                    if (oldIdCategorieOfObjetListNewObjet != null && !oldIdCategorieOfObjetListNewObjet.equals(categorie)) {
+                        oldIdCategorieOfObjetListNewObjet.getObjetList().remove(objetListNewObjet);
+                        oldIdCategorieOfObjetListNewObjet = em.merge(oldIdCategorieOfObjetListNewObjet);
                     }
                 }
             }
@@ -128,10 +128,10 @@ public class CategorieJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The categorie with id " + id + " no longer exists.", enfe);
             }
-            Collection<Objet> objetCollection = categorie.getObjetCollection();
-            for (Objet objetCollectionObjet : objetCollection) {
-                objetCollectionObjet.setIdCategorie(null);
-                objetCollectionObjet = em.merge(objetCollectionObjet);
+            List<Objet> objetList = categorie.getObjetList();
+            for (Objet objetListObjet : objetList) {
+                objetListObjet.setIdCategorie(null);
+                objetListObjet = em.merge(objetListObjet);
             }
             em.remove(categorie);
             em.getTransaction().commit();

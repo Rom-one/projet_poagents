@@ -1,21 +1,25 @@
-package dao;
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-import data.Objet;
-import data.Vente;
-import data.exceptions.NonexistentEntityException;
+
+package dao;
+
+import dao.exceptions.IllegalOrphanException;
+import dao.exceptions.NonexistentEntityException;
 import java.io.Serializable;
+import javax.persistence.Query;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import data.Objet;
+import data.Stock;
+import data.Vente;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityNotFoundException;
-import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 
 /**
  *
@@ -32,7 +36,21 @@ public class VenteJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(Vente vente) {
+    public void create(Vente vente) throws IllegalOrphanException {
+        List<String> illegalOrphanMessages = null;
+        Stock idStockOrphanCheck = vente.getIdStock();
+        if (idStockOrphanCheck != null) {
+            Vente oldVenteOfIdStock = idStockOrphanCheck.getVente();
+            if (oldVenteOfIdStock != null) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("The Stock " + idStockOrphanCheck + " already has an item of type Vente whose idStock column cannot be null. Please make another selection for the idStock field.");
+            }
+        }
+        if (illegalOrphanMessages != null) {
+            throw new IllegalOrphanException(illegalOrphanMessages);
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -42,10 +60,19 @@ public class VenteJpaController implements Serializable {
                 refObjet = em.getReference(refObjet.getClass(), refObjet.getRefObjet());
                 vente.setRefObjet(refObjet);
             }
+            Stock idStock = vente.getIdStock();
+            if (idStock != null) {
+                idStock = em.getReference(idStock.getClass(), idStock.getIdStock());
+                vente.setIdStock(idStock);
+            }
             em.persist(vente);
             if (refObjet != null) {
-                refObjet.getVenteCollection().add(vente);
+                refObjet.getVenteList().add(vente);
                 refObjet = em.merge(refObjet);
+            }
+            if (idStock != null) {
+                idStock.setVente(vente);
+                idStock = em.merge(idStock);
             }
             em.getTransaction().commit();
         } finally {
@@ -55,7 +82,7 @@ public class VenteJpaController implements Serializable {
         }
     }
 
-    public void edit(Vente vente) throws NonexistentEntityException, Exception {
+    public void edit(Vente vente) throws IllegalOrphanException, NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -63,18 +90,45 @@ public class VenteJpaController implements Serializable {
             Vente persistentVente = em.find(Vente.class, vente.getIdVente());
             Objet refObjetOld = persistentVente.getRefObjet();
             Objet refObjetNew = vente.getRefObjet();
+            Stock idStockOld = persistentVente.getIdStock();
+            Stock idStockNew = vente.getIdStock();
+            List<String> illegalOrphanMessages = null;
+            if (idStockNew != null && !idStockNew.equals(idStockOld)) {
+                Vente oldVenteOfIdStock = idStockNew.getVente();
+                if (oldVenteOfIdStock != null) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("The Stock " + idStockNew + " already has an item of type Vente whose idStock column cannot be null. Please make another selection for the idStock field.");
+                }
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
             if (refObjetNew != null) {
                 refObjetNew = em.getReference(refObjetNew.getClass(), refObjetNew.getRefObjet());
                 vente.setRefObjet(refObjetNew);
             }
+            if (idStockNew != null) {
+                idStockNew = em.getReference(idStockNew.getClass(), idStockNew.getIdStock());
+                vente.setIdStock(idStockNew);
+            }
             vente = em.merge(vente);
             if (refObjetOld != null && !refObjetOld.equals(refObjetNew)) {
-                refObjetOld.getVenteCollection().remove(vente);
+                refObjetOld.getVenteList().remove(vente);
                 refObjetOld = em.merge(refObjetOld);
             }
             if (refObjetNew != null && !refObjetNew.equals(refObjetOld)) {
-                refObjetNew.getVenteCollection().add(vente);
+                refObjetNew.getVenteList().add(vente);
                 refObjetNew = em.merge(refObjetNew);
+            }
+            if (idStockOld != null && !idStockOld.equals(idStockNew)) {
+                idStockOld.setVente(null);
+                idStockOld = em.merge(idStockOld);
+            }
+            if (idStockNew != null && !idStockNew.equals(idStockOld)) {
+                idStockNew.setVente(vente);
+                idStockNew = em.merge(idStockNew);
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -107,8 +161,13 @@ public class VenteJpaController implements Serializable {
             }
             Objet refObjet = vente.getRefObjet();
             if (refObjet != null) {
-                refObjet.getVenteCollection().remove(vente);
+                refObjet.getVenteList().remove(vente);
                 refObjet = em.merge(refObjet);
+            }
+            Stock idStock = vente.getIdStock();
+            if (idStock != null) {
+                idStock.setVente(null);
+                idStock = em.merge(idStock);
             }
             em.remove(vente);
             em.getTransaction().commit();

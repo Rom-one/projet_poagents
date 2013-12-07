@@ -10,7 +10,7 @@ import agent.VendeurAgent;
 import dao.DAOFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -35,6 +35,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Vendeur.findByTresorerie", query = "SELECT v FROM Vendeur v WHERE v.tresorerie = :tresorerie"),
     @NamedQuery(name = "Vendeur.findByStockTotal", query = "SELECT v FROM Vendeur v WHERE v.stockTotal = :stockTotal")})
 public class Vendeur implements Serializable {
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,13 +56,13 @@ public class Vendeur implements Serializable {
         this.idVendeur = idVendeur;
     }
 
-    public Vendeur(Integer idVendeur, int tresorerie, int stockTotal) {
-        this.idVendeur = idVendeur;
+    public Vendeur(int tresorerie, int stockTotal) {
         this.tresorerie = tresorerie;
         this.stockTotal = stockTotal;
     }
-    
-    public Vendeur(int tresorerie, int stockTotal) {
+
+    public Vendeur(Integer idVendeur, int tresorerie, int stockTotal) {
+        this.idVendeur = idVendeur;
         this.tresorerie = tresorerie;
         this.stockTotal = stockTotal;
     }
@@ -114,16 +115,16 @@ public class Vendeur implements Serializable {
     public String toString() {
         return "data.Vendeur[ idVendeur=" + idVendeur + " ]";
     }
-    
+
     public void addRecette(int montant) {
         tresorerie += montant;
     }
-    
+
     public void addDepense(int montant) {
         tresorerie -= montant;
     }
-    
-    public int getPrixParStrategieHistorique(Objet objet) {
+
+    public void setMargeSelonStrategie(Objet objet) {
         ArrayList<Vente> ventes = (ArrayList<Vente>) DAOFactory.getVenteDAO()
                 .getEntityManager()
                 .createNamedQuery("findByObjetAndSemaine")
@@ -131,21 +132,20 @@ public class Vendeur implements Serializable {
                 .setParameter("semaine1", VendeurAgent.getDate(VendeurAgent.getSemaineCourante() - 1))
                 .setParameter("semaine2", VendeurAgent.getSemaineCourante())
                 .getResultList();
-        
-        Stock stock = (Stock) DAOFactory.getStockDAO()
-                .getEntityManager()
-                .createNamedQuery("findByObjetAndSemaine")
-                .setParameter("objet", objet)
-                .setParameter("semaine1", VendeurAgent.getDate(VendeurAgent.getSemaineCourante() - 1))
-                .setParameter("semaine2", VendeurAgent.getSemaineCourante())
-                .getSingleResult();
-        
-        int prix = 0;
-        
-        int nb_objets_vendus = ventes.size();
-        int stokc_initial = stock.getQuantite();
-        
-        return prix;
-    }
 
+        int marge = objet.getMarge();
+        
+        int nbventes = ventes.size();
+        int stock = objet.getStockRestant();
+        
+        double pourcentage = (double) (nbventes/stock);
+        
+        if(pourcentage > 0.9) {
+            
+        }
+        else {
+            
+        }
+    }
+    
 }

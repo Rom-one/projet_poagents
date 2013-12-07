@@ -6,16 +6,20 @@
 package agent;
 
 import behaviour.AchatClientProduit;
+import behaviour.MiseAJourMarge;
 import behaviour.RequeteClientProduit;
 import behaviour.RequeteClientProduits;
 import dao.DAOFactory;
 import dao.ObjetJpaController;
 import dao.VenteJpaController;
+import dao.exceptions.IllegalOrphanException;
 import data.Objet;
 import data.Stock;
 import data.Vendeur;
 import data.Vente;
+import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -39,9 +43,16 @@ public class VendeurAgent extends Agent {
 
     private final static int SEMAINE_MS = 1000;
     private final static long TEMPS_DEPART = System.currentTimeMillis() - 5 * SEMAINE_MS;
+    
+    private final static String CUSTOMER_SERVICE_TYPE = "selling";
+    private final static String PROVIDER_SERVICE_TYPE = "product";
+    private AID[] providerAgents;
 
     private List<Objet> catalogue;
     private Vendeur vendeur;
+
+    private static final ObjetJpaController objetDAO = new ObjetJpaController(Persistence.createEntityManagerFactory("POAgentPU"));
+    private static final VenteJpaController venteDAO = new VenteJpaController(Persistence.createEntityManagerFactory("POAgentPU"));
 
     public List<Objet> getCatalogue() {
         return DAOFactory.getObjetDAO().findObjetEntities();
@@ -69,7 +80,6 @@ public class VendeurAgent extends Agent {
 
     @Override
     protected void setup() {
-
         // Initialisation du stock et de la trésorie
         int stock = STOCK_MOYEN;
         int tresorie = TRESORIE_MOYENNE;
@@ -94,22 +104,55 @@ public class VendeurAgent extends Agent {
         dfd.setName(getAID());
 
         ServiceDescription sd = new ServiceDescription();
-        sd.setType("product-selling");
-        sd.setName("Vente de produits");
+        sd.setType(PROVIDER_SERVICE_TYPE);
+        DFAgentDescription[] result = null;
+        try {
+            result = DFService.search(this, dfd);
+        } catch (FIPAException ex) {
+            Logger.getLogger(VendeurAgent.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        providerAgents = new AID[result.length];
+        for (int i = 0; i < result.length; i++) {
+            providerAgents[i] = result[i].getName();
+        }
 
-        dfd.addServices(sd);
+        ServiceDescription sd1 = new ServiceDescription();
+        sd1.setType(CUSTOMER_SERVICE_TYPE);
+        sd1.setName("Vente de produits");
+        dfd.addServices(sd1);
+
+        ServiceDescription sd2 = new ServiceDescription();
+        sd2.setType(PROVIDER_SERVICE_TYPE);
+        sd2.setName("product");
+        dfd.addServices(sd2);
         try {
             DFService.register(this, dfd);
         } catch (FIPAException fe) {
             fe.printStackTrace();
+            System.err.println("Impossible d'enregistrer les services !! ou erreur FIPA");
         }
+
+        // Comportement mettant à jour la marge de chaque objet toutes les semaines
+        addBehaviour(new MiseAJourMarge(this,SEMAINE_MS));
+        
+        // toute les 20 secondes on vérifie no stocks et notre trésorerie pour racheter des produit et ajuster nos marge
+        addBehaviour(new TickerBehaviour(this, 20000) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onTick() {
+                //TODO update product margin in comparison to previous sales
+            }
+        });
     }
 
     @Override
     protected void takeDown() {
         try {
+
             // Désinscrire le service de l'agent
             DFService.deregister(this);
+            System.out.println("Vendeur Agent " + getAID().getName() + " terminated.");
         } catch (FIPAException ex) {
             Logger.getLogger(VendeurAgent.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -136,7 +179,11 @@ public class VendeurAgent extends Agent {
                 int prix = (int) (55 + Math.random() * (75 - 55 + 1));
                 for (int cpt = 0; cpt <= 5; cpt++) {
                     Vente vente = new Vente(new Date(later.getTime()), prix, "buyer", objet);
-                    DAOFactory.getVenteDAO().create(vente);
+                    try {
+                        DAOFactory.getVenteDAO().create(vente);
+                    } catch (IllegalOrphanException ex) {
+                        Logger.getLogger(VendeurAgent.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }

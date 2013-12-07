@@ -7,7 +7,7 @@
 package data;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -43,7 +43,7 @@ public class Categorie implements Serializable {
     @Column(nullable = false, length = 30)
     private String typeCategorie;
     @OneToMany(mappedBy = "idCategorie")
-    private Collection<Objet> objetCollection;
+    private List<Objet> objetList;
 
     public Categorie() {
     }
@@ -74,12 +74,12 @@ public class Categorie implements Serializable {
     }
 
     @XmlTransient
-    public Collection<Objet> getObjetCollection() {
-        return objetCollection;
+    public List<Objet> getObjetList() {
+        return objetList;
     }
 
-    public void setObjetCollection(Collection<Objet> objetCollection) {
-        this.objetCollection = objetCollection;
+    public void setObjetList(List<Objet> objetList) {
+        this.objetList = objetList;
     }
 
     @Override

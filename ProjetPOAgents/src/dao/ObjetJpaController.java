@@ -1,26 +1,26 @@
-package dao;
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-import data.Categorie;
-import data.Objet;
-import data.Stock;
-import data.Vente;
-import data.exceptions.IllegalOrphanException;
-import data.exceptions.NonexistentEntityException;
+
+package dao;
+
+import dao.exceptions.IllegalOrphanException;
+import dao.exceptions.NonexistentEntityException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityNotFoundException;
 import javax.persistence.Query;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import data.Categorie;
+import data.Objet;
+import data.Vente;
+import java.util.ArrayList;
+import java.util.List;
+import data.Stock;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -38,11 +38,11 @@ public class ObjetJpaController implements Serializable {
     }
 
     public void create(Objet objet) {
-        if (objet.getVenteCollection() == null) {
-            objet.setVenteCollection(new ArrayList<Vente>());
+        if (objet.getVenteList() == null) {
+            objet.setVenteList(new ArrayList<Vente>());
         }
-        if (objet.getStockCollection() == null) {
-            objet.setStockCollection(new ArrayList<Stock>());
+        if (objet.getStockList() == null) {
+            objet.setStockList(new ArrayList<Stock>());
         }
         EntityManager em = null;
         try {
@@ -53,39 +53,39 @@ public class ObjetJpaController implements Serializable {
                 idCategorie = em.getReference(idCategorie.getClass(), idCategorie.getIdCategorie());
                 objet.setIdCategorie(idCategorie);
             }
-            Collection<Vente> attachedVenteCollection = new ArrayList<Vente>();
-            for (Vente venteCollectionVenteToAttach : objet.getVenteCollection()) {
-                venteCollectionVenteToAttach = em.getReference(venteCollectionVenteToAttach.getClass(), venteCollectionVenteToAttach.getIdVente());
-                attachedVenteCollection.add(venteCollectionVenteToAttach);
+            List<Vente> attachedVenteList = new ArrayList<Vente>();
+            for (Vente venteListVenteToAttach : objet.getVenteList()) {
+                venteListVenteToAttach = em.getReference(venteListVenteToAttach.getClass(), venteListVenteToAttach.getIdVente());
+                attachedVenteList.add(venteListVenteToAttach);
             }
-            objet.setVenteCollection(attachedVenteCollection);
-            Collection<Stock> attachedStockCollection = new ArrayList<Stock>();
-            for (Stock stockCollectionStockToAttach : objet.getStockCollection()) {
-                stockCollectionStockToAttach = em.getReference(stockCollectionStockToAttach.getClass(), stockCollectionStockToAttach.getIdStock());
-                attachedStockCollection.add(stockCollectionStockToAttach);
+            objet.setVenteList(attachedVenteList);
+            List<Stock> attachedStockList = new ArrayList<Stock>();
+            for (Stock stockListStockToAttach : objet.getStockList()) {
+                stockListStockToAttach = em.getReference(stockListStockToAttach.getClass(), stockListStockToAttach.getIdStock());
+                attachedStockList.add(stockListStockToAttach);
             }
-            objet.setStockCollection(attachedStockCollection);
+            objet.setStockList(attachedStockList);
             em.persist(objet);
             if (idCategorie != null) {
-                idCategorie.getObjetCollection().add(objet);
+                idCategorie.getObjetList().add(objet);
                 idCategorie = em.merge(idCategorie);
             }
-            for (Vente venteCollectionVente : objet.getVenteCollection()) {
-                Objet oldRefObjetOfVenteCollectionVente = venteCollectionVente.getRefObjet();
-                venteCollectionVente.setRefObjet(objet);
-                venteCollectionVente = em.merge(venteCollectionVente);
-                if (oldRefObjetOfVenteCollectionVente != null) {
-                    oldRefObjetOfVenteCollectionVente.getVenteCollection().remove(venteCollectionVente);
-                    oldRefObjetOfVenteCollectionVente = em.merge(oldRefObjetOfVenteCollectionVente);
+            for (Vente venteListVente : objet.getVenteList()) {
+                Objet oldRefObjetOfVenteListVente = venteListVente.getRefObjet();
+                venteListVente.setRefObjet(objet);
+                venteListVente = em.merge(venteListVente);
+                if (oldRefObjetOfVenteListVente != null) {
+                    oldRefObjetOfVenteListVente.getVenteList().remove(venteListVente);
+                    oldRefObjetOfVenteListVente = em.merge(oldRefObjetOfVenteListVente);
                 }
             }
-            for (Stock stockCollectionStock : objet.getStockCollection()) {
-                Objet oldRefObjetOfStockCollectionStock = stockCollectionStock.getRefObjet();
-                stockCollectionStock.setRefObjet(objet);
-                stockCollectionStock = em.merge(stockCollectionStock);
-                if (oldRefObjetOfStockCollectionStock != null) {
-                    oldRefObjetOfStockCollectionStock.getStockCollection().remove(stockCollectionStock);
-                    oldRefObjetOfStockCollectionStock = em.merge(oldRefObjetOfStockCollectionStock);
+            for (Stock stockListStock : objet.getStockList()) {
+                Objet oldRefObjetOfStockListStock = stockListStock.getRefObjet();
+                stockListStock.setRefObjet(objet);
+                stockListStock = em.merge(stockListStock);
+                if (oldRefObjetOfStockListStock != null) {
+                    oldRefObjetOfStockListStock.getStockList().remove(stockListStock);
+                    oldRefObjetOfStockListStock = em.merge(oldRefObjetOfStockListStock);
                 }
             }
             em.getTransaction().commit();
@@ -104,25 +104,25 @@ public class ObjetJpaController implements Serializable {
             Objet persistentObjet = em.find(Objet.class, objet.getRefObjet());
             Categorie idCategorieOld = persistentObjet.getIdCategorie();
             Categorie idCategorieNew = objet.getIdCategorie();
-            Collection<Vente> venteCollectionOld = persistentObjet.getVenteCollection();
-            Collection<Vente> venteCollectionNew = objet.getVenteCollection();
-            Collection<Stock> stockCollectionOld = persistentObjet.getStockCollection();
-            Collection<Stock> stockCollectionNew = objet.getStockCollection();
+            List<Vente> venteListOld = persistentObjet.getVenteList();
+            List<Vente> venteListNew = objet.getVenteList();
+            List<Stock> stockListOld = persistentObjet.getStockList();
+            List<Stock> stockListNew = objet.getStockList();
             List<String> illegalOrphanMessages = null;
-            for (Vente venteCollectionOldVente : venteCollectionOld) {
-                if (!venteCollectionNew.contains(venteCollectionOldVente)) {
+            for (Vente venteListOldVente : venteListOld) {
+                if (!venteListNew.contains(venteListOldVente)) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
-                    illegalOrphanMessages.add("You must retain Vente " + venteCollectionOldVente + " since its refObjet field is not nullable.");
+                    illegalOrphanMessages.add("You must retain Vente " + venteListOldVente + " since its refObjet field is not nullable.");
                 }
             }
-            for (Stock stockCollectionOldStock : stockCollectionOld) {
-                if (!stockCollectionNew.contains(stockCollectionOldStock)) {
+            for (Stock stockListOldStock : stockListOld) {
+                if (!stockListNew.contains(stockListOldStock)) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
-                    illegalOrphanMessages.add("You must retain Stock " + stockCollectionOldStock + " since its refObjet field is not nullable.");
+                    illegalOrphanMessages.add("You must retain Stock " + stockListOldStock + " since its refObjet field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
@@ -132,48 +132,48 @@ public class ObjetJpaController implements Serializable {
                 idCategorieNew = em.getReference(idCategorieNew.getClass(), idCategorieNew.getIdCategorie());
                 objet.setIdCategorie(idCategorieNew);
             }
-            Collection<Vente> attachedVenteCollectionNew = new ArrayList<Vente>();
-            for (Vente venteCollectionNewVenteToAttach : venteCollectionNew) {
-                venteCollectionNewVenteToAttach = em.getReference(venteCollectionNewVenteToAttach.getClass(), venteCollectionNewVenteToAttach.getIdVente());
-                attachedVenteCollectionNew.add(venteCollectionNewVenteToAttach);
+            List<Vente> attachedVenteListNew = new ArrayList<Vente>();
+            for (Vente venteListNewVenteToAttach : venteListNew) {
+                venteListNewVenteToAttach = em.getReference(venteListNewVenteToAttach.getClass(), venteListNewVenteToAttach.getIdVente());
+                attachedVenteListNew.add(venteListNewVenteToAttach);
             }
-            venteCollectionNew = attachedVenteCollectionNew;
-            objet.setVenteCollection(venteCollectionNew);
-            Collection<Stock> attachedStockCollectionNew = new ArrayList<Stock>();
-            for (Stock stockCollectionNewStockToAttach : stockCollectionNew) {
-                stockCollectionNewStockToAttach = em.getReference(stockCollectionNewStockToAttach.getClass(), stockCollectionNewStockToAttach.getIdStock());
-                attachedStockCollectionNew.add(stockCollectionNewStockToAttach);
+            venteListNew = attachedVenteListNew;
+            objet.setVenteList(venteListNew);
+            List<Stock> attachedStockListNew = new ArrayList<Stock>();
+            for (Stock stockListNewStockToAttach : stockListNew) {
+                stockListNewStockToAttach = em.getReference(stockListNewStockToAttach.getClass(), stockListNewStockToAttach.getIdStock());
+                attachedStockListNew.add(stockListNewStockToAttach);
             }
-            stockCollectionNew = attachedStockCollectionNew;
-            objet.setStockCollection(stockCollectionNew);
+            stockListNew = attachedStockListNew;
+            objet.setStockList(stockListNew);
             objet = em.merge(objet);
             if (idCategorieOld != null && !idCategorieOld.equals(idCategorieNew)) {
-                idCategorieOld.getObjetCollection().remove(objet);
+                idCategorieOld.getObjetList().remove(objet);
                 idCategorieOld = em.merge(idCategorieOld);
             }
             if (idCategorieNew != null && !idCategorieNew.equals(idCategorieOld)) {
-                idCategorieNew.getObjetCollection().add(objet);
+                idCategorieNew.getObjetList().add(objet);
                 idCategorieNew = em.merge(idCategorieNew);
             }
-            for (Vente venteCollectionNewVente : venteCollectionNew) {
-                if (!venteCollectionOld.contains(venteCollectionNewVente)) {
-                    Objet oldRefObjetOfVenteCollectionNewVente = venteCollectionNewVente.getRefObjet();
-                    venteCollectionNewVente.setRefObjet(objet);
-                    venteCollectionNewVente = em.merge(venteCollectionNewVente);
-                    if (oldRefObjetOfVenteCollectionNewVente != null && !oldRefObjetOfVenteCollectionNewVente.equals(objet)) {
-                        oldRefObjetOfVenteCollectionNewVente.getVenteCollection().remove(venteCollectionNewVente);
-                        oldRefObjetOfVenteCollectionNewVente = em.merge(oldRefObjetOfVenteCollectionNewVente);
+            for (Vente venteListNewVente : venteListNew) {
+                if (!venteListOld.contains(venteListNewVente)) {
+                    Objet oldRefObjetOfVenteListNewVente = venteListNewVente.getRefObjet();
+                    venteListNewVente.setRefObjet(objet);
+                    venteListNewVente = em.merge(venteListNewVente);
+                    if (oldRefObjetOfVenteListNewVente != null && !oldRefObjetOfVenteListNewVente.equals(objet)) {
+                        oldRefObjetOfVenteListNewVente.getVenteList().remove(venteListNewVente);
+                        oldRefObjetOfVenteListNewVente = em.merge(oldRefObjetOfVenteListNewVente);
                     }
                 }
             }
-            for (Stock stockCollectionNewStock : stockCollectionNew) {
-                if (!stockCollectionOld.contains(stockCollectionNewStock)) {
-                    Objet oldRefObjetOfStockCollectionNewStock = stockCollectionNewStock.getRefObjet();
-                    stockCollectionNewStock.setRefObjet(objet);
-                    stockCollectionNewStock = em.merge(stockCollectionNewStock);
-                    if (oldRefObjetOfStockCollectionNewStock != null && !oldRefObjetOfStockCollectionNewStock.equals(objet)) {
-                        oldRefObjetOfStockCollectionNewStock.getStockCollection().remove(stockCollectionNewStock);
-                        oldRefObjetOfStockCollectionNewStock = em.merge(oldRefObjetOfStockCollectionNewStock);
+            for (Stock stockListNewStock : stockListNew) {
+                if (!stockListOld.contains(stockListNewStock)) {
+                    Objet oldRefObjetOfStockListNewStock = stockListNewStock.getRefObjet();
+                    stockListNewStock.setRefObjet(objet);
+                    stockListNewStock = em.merge(stockListNewStock);
+                    if (oldRefObjetOfStockListNewStock != null && !oldRefObjetOfStockListNewStock.equals(objet)) {
+                        oldRefObjetOfStockListNewStock.getStockList().remove(stockListNewStock);
+                        oldRefObjetOfStockListNewStock = em.merge(oldRefObjetOfStockListNewStock);
                     }
                 }
             }
@@ -207,26 +207,26 @@ public class ObjetJpaController implements Serializable {
                 throw new NonexistentEntityException("The objet with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
-            Collection<Vente> venteCollectionOrphanCheck = objet.getVenteCollection();
-            for (Vente venteCollectionOrphanCheckVente : venteCollectionOrphanCheck) {
+            List<Vente> venteListOrphanCheck = objet.getVenteList();
+            for (Vente venteListOrphanCheckVente : venteListOrphanCheck) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
-                illegalOrphanMessages.add("This Objet (" + objet + ") cannot be destroyed since the Vente " + venteCollectionOrphanCheckVente + " in its venteCollection field has a non-nullable refObjet field.");
+                illegalOrphanMessages.add("This Objet (" + objet + ") cannot be destroyed since the Vente " + venteListOrphanCheckVente + " in its venteList field has a non-nullable refObjet field.");
             }
-            Collection<Stock> stockCollectionOrphanCheck = objet.getStockCollection();
-            for (Stock stockCollectionOrphanCheckStock : stockCollectionOrphanCheck) {
+            List<Stock> stockListOrphanCheck = objet.getStockList();
+            for (Stock stockListOrphanCheckStock : stockListOrphanCheck) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
-                illegalOrphanMessages.add("This Objet (" + objet + ") cannot be destroyed since the Stock " + stockCollectionOrphanCheckStock + " in its stockCollection field has a non-nullable refObjet field.");
+                illegalOrphanMessages.add("This Objet (" + objet + ") cannot be destroyed since the Stock " + stockListOrphanCheckStock + " in its stockList field has a non-nullable refObjet field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
             Categorie idCategorie = objet.getIdCategorie();
             if (idCategorie != null) {
-                idCategorie.getObjetCollection().remove(objet);
+                idCategorie.getObjetList().remove(objet);
                 idCategorie = em.merge(idCategorie);
             }
             em.remove(objet);
