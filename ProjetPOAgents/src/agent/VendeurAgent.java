@@ -4,7 +4,6 @@ import behaviour.AchatClientProduit;
 import behaviour.MiseAJourMarge;
 import behaviour.RequeteClientProduit;
 import behaviour.RequeteClientProduits;
-import behaviour.SearchBetterProviderBehaviour;
 import dao.DAOFactory;
 import dao.exceptions.IllegalOrphanException;
 import data.Objet;
@@ -75,7 +74,7 @@ public class VendeurAgent extends Agent {
         cal.add(Calendar.SECOND, 60 * 60 * 24 * 7 * semaine);
         return cal.getTime();
     }
-    
+
     public static boolean isSoldes(int semaine) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(getDate(semaine));
@@ -103,18 +102,6 @@ public class VendeurAgent extends Agent {
         addBehaviour(new AchatClientProduit());
         addBehaviour(new RequeteClientProduits());
 
-        addBehaviour(new SearchBetterProviderBehaviour(this));
-
-        // toute les 20 secondes on vérifie no stocks et notre trésorerie pour racheter des produit et ajuster nos marge
-        addBehaviour(new TickerBehaviour(this, 1000) {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onTick() {
-                //TODO update product margin in comparison to previous sales
-            }
-        });
-
         // Enregistrement du service de vente d'objets
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(getAID());
@@ -137,15 +124,16 @@ public class VendeurAgent extends Agent {
         }
 
         // Comportement mettant à jour la marge de chaque objet toutes les semaines
-        addBehaviour(new MiseAJourMarge(this,SEMAINE_MS));
-        
-        // toute les 20 secondes on vérifie no stocks et notre trésorerie pour racheter des produit et ajuster nos marge
-        addBehaviour(new TickerBehaviour(this, 20000) {
+        addBehaviour(new MiseAJourMarge(this, SEMAINE_MS));
+
+        // toute les secondes on vérifie no stocks et notre trésorerie pour racheter des produit et ajuster nos marge
+        addBehaviour(new TickerBehaviour(this, 1000) {
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onTick() {
                 //TODO update product margin in comparison to previous sales
+                //addBehaviour(new SearchBetterProviderBehaviour(myAgent));
             }
         });
     }
