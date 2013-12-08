@@ -22,6 +22,7 @@ public class HandleInform extends SimpleBehaviour {
     private MessageTemplate mtpPerformative = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
     private MessageTemplate mtProvider;
     private MessageTemplate mt;
+    private VendeurAgent myAgent;
 
     int aleatoire;
     boolean finished;
@@ -32,6 +33,7 @@ public class HandleInform extends SimpleBehaviour {
 
     public HandleInform(Agent a, AID provider) {
         super(a);
+        this.myAgent = (VendeurAgent) a;
         finished = false;
         mtProvider = MessageTemplate.MatchSender(provider);
         mt = MessageTemplate.and(mtpPerformative, mtProvider);
@@ -43,25 +45,23 @@ public class HandleInform extends SimpleBehaviour {
         ACLMessage msg = myAgent.receive(mt);
         if (msg != null) {
             // On vérifie l'existence ce provider dans le DF
-            if (((VendeurAgent) myAgent).isAProvider(msg.getSender())) {
-                String content = msg.getContent();
-                double price = 0;
-                double betterPrice = 0;
-                try {
-                    price = Double.valueOf(content);
-                    betterPrice = (Double) this.getParent().getDataStore().get("betterPrice");
-                } catch (NumberFormatException e) {
-                    System.err.println("Prix reçu au mauvais format!");
-                }
-
-                // On regarde si le prix que nous a proposé ce founisseur est plus avantageux
-                if (price < betterPrice) {
-                    ((VendeurAgent) myAgent).setBestProvider(msg.getSender());
-                    this.getParent().getDataStore().put("betterPrice", price);
-                }
-                // Ce fournisseur nous a répondu, le Behaviour est donc fini
-                finished = true;
+            String content = msg.getContent();
+            double price = 0;
+            double betterPrice = 0;
+            try {
+                price = Double.valueOf(content);
+                betterPrice = myAgent.getBestPrice();
+            } catch (NumberFormatException e) {
+                System.err.println("Prix reçu au mauvais format!");
             }
+
+            // On regarde si le prix que nous a proposé ce founisseur est plus avantageux
+            if (price < betterPrice) {
+                myAgent.setBestProvider(msg.getSender());
+                myAgent.setBestPrice(price);
+            }
+            // Ce fournisseur nous a répondu, le Behaviour est donc fini
+            finished = true;
         } else {
             block();
         }
@@ -69,6 +69,9 @@ public class HandleInform extends SimpleBehaviour {
 
     @Override
     public boolean done() {
+        if (finished) {
+            System.out.println("J'ai reçu la réponse que j'attendais");
+        }
         return finished;
     }
 }

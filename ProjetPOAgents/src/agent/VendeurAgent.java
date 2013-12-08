@@ -4,6 +4,7 @@ import behaviour.AchatClientProduit;
 import behaviour.MiseAJourMarge;
 import behaviour.RequeteClientProduit;
 import behaviour.RequeteClientProduits;
+import behaviour.SearchBetterProviderBehaviour;
 import dao.DAOFactory;
 import data.Objet;
 import data.Stock;
@@ -11,7 +12,6 @@ import data.Vendeur;
 import data.Vente;
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.TickerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
@@ -35,12 +35,31 @@ public class VendeurAgent extends Agent {
     private final static int SEMAINE_MS = 1000;
     private final static long TEMPS_DEPART = System.currentTimeMillis() - 5 * SEMAINE_MS;
 
-    private final static String CUSTOMER_SERVICE_TYPE = "selling";
-    private final static String PROVIDER_SERVICE_TYPE = "product";
+    private final static String CUSTOMER_SERVICE_TYPE = "customer";
+    private final static String PROVIDER_SERVICE_TYPE = "provider";
+    private final static String BUSINESS_SERVICE_TYPE = "business";
 
     private List<Objet> catalogue;
     private Vendeur vendeur;
     private AID bestProvider = null;
+    private Double bestPrice;
+    private AID[] providersInDeal;
+
+    public AID[] getProvidersInDeal() {
+        return providersInDeal;
+    }
+
+    public void setProvidersInDeal(AID[] providersInDeal) {
+        this.providersInDeal = providersInDeal;
+    }
+
+    public Double getBestPrice() {
+        return bestPrice;
+    }
+
+    public void setBestPrice(Double bestPrice) {
+        this.bestPrice = bestPrice;
+    }
 
     public AID getBestProvider() {
         return bestProvider;
@@ -101,16 +120,7 @@ public class VendeurAgent extends Agent {
         addBehaviour(new AchatClientProduit());
         addBehaviour(new RequeteClientProduits());
 
-        //addBehaviour(new SearchBetterProviderBehaviour(this));
-        // toute les 20 secondes on vérifie no stocks et notre trésorerie pour racheter des produit et ajuster nos marge
-        addBehaviour(new TickerBehaviour(this, 1000) {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onTick() {
-                //TODO update product margin in comparison to previous sales
-            }
-        });
+        addBehaviour(new SearchBetterProviderBehaviour(this));
 
         // Enregistrement du service de vente d'objets
         DFAgentDescription dfd = new DFAgentDescription();
@@ -118,12 +128,12 @@ public class VendeurAgent extends Agent {
         searchProvider();
 
         ServiceDescription sd = new ServiceDescription();
-        sd.setType(CUSTOMER_SERVICE_TYPE);
+        sd.setType(BUSINESS_SERVICE_TYPE);
         sd.setName("Vente de produits");
         dfd.addServices(sd);
 
         sd = new ServiceDescription();
-        sd.setType(PROVIDER_SERVICE_TYPE);
+        sd.setType(BUSINESS_SERVICE_TYPE);
         sd.setName("Negociations avec le fournisseur");
         dfd.addServices(sd);
         try {
@@ -135,17 +145,6 @@ public class VendeurAgent extends Agent {
 
         // Comportement mettant à jour la marge de chaque objet toutes les semaines
         addBehaviour(new MiseAJourMarge(this, SEMAINE_MS));
-
-        // toute les secondes on vérifie no stocks et notre trésorerie pour racheter des produit et ajuster nos marge
-        addBehaviour(new TickerBehaviour(this, 1000) {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected void onTick() {
-                //TODO update product margin in comparison to previous sales
-                //addBehaviour(new SearchBetterProviderBehaviour(myAgent));
-            }
-        });
     }
 
     @Override
@@ -189,7 +188,7 @@ public class VendeurAgent extends Agent {
 
     public AID[] searchProvider() {
         DFAgentDescription dfd = new DFAgentDescription();
-        AID[] providerAgents = null;
+        providersInDeal = null;
 
         ServiceDescription sd = new ServiceDescription();
         sd.setType(PROVIDER_SERVICE_TYPE);
@@ -197,16 +196,18 @@ public class VendeurAgent extends Agent {
         DFAgentDescription[] result;
         try {
             result = DFService.search(this, dfd);
-            providerAgents = new AID[result.length];
+            providersInDeal = new AID[result.length];
             for (int i = 0; i < result.length; i++) {
-                providerAgents[i] = result[i].getName();
+                if (!(result[i].getName().equals(getAID()))) {
+                    providersInDeal[i] = result[i].getName();
+                }
             }
         } catch (FIPAException ex) {
             Logger.getLogger(VendeurAgent.class.getName()).log(Level.SEVERE, null, ex);
         } catch (NullPointerException np) {
             System.err.println("Aucun agents provider dans le DF");
         }
-        return providerAgents;
+        return providersInDeal;
     }
 
     /*
