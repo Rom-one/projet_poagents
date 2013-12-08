@@ -29,8 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @version 0.1
  */
 @Entity
-@Table(catalog = "db_poagent", schema = "", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"idStock"})})
+@Table(catalog = "db_poagent", schema = "")
 @XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "Vente.findAll", query = "SELECT v FROM Vente v"),
@@ -59,9 +58,6 @@ public class Vente implements Serializable {
     @JoinColumn(name = "refObjet", referencedColumnName = "refObjet", nullable = false)
     @ManyToOne(optional = false)
     private Objet refObjet;
-    @JoinColumn(name = "idStock", referencedColumnName = "idStock", nullable = false)
-    @OneToOne(optional = false)
-    private Stock idStock;
 
     public Vente() {
     }
@@ -77,7 +73,7 @@ public class Vente implements Serializable {
     }
 
     public Vente(Date date, int prixVente, String acheteur, Objet objet) {
-        this.dateVente = dateVente;
+        this.dateVente = date;
         this.acheteur = acheteur;
         this.prixVente = prixVente;
         this.refObjet = objet;
@@ -121,14 +117,6 @@ public class Vente implements Serializable {
 
     public void setRefObjet(Objet refObjet) {
         this.refObjet = refObjet;
-    }
-
-    public Stock getIdStock() {
-        return idStock;
-    }
-
-    public void setIdStock(Stock idStock) {
-        this.idStock = idStock;
     }
 
     @Override

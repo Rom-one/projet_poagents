@@ -192,7 +192,6 @@ csx
 # Windows Store app package directory
 AppPackages/
 # Others
-sql/
 *.Cache
 ClientBin/
 [Ss]tyle[Cc]op.*
@@ -249,3 +248,6 @@ build
 !*.xcodeproj/project.pbxproj
 !*.xcworkspace/contents.xcworkspacedata
 ProjetPOAgents/src/META-INF/persistence.xml
+ProjetPOAgents/src/hibernate.cfg.xml
+APDescription.txt
+MTPs-Main-Container.txt

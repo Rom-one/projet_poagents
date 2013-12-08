@@ -60,14 +60,11 @@ public class RequeteClientProduits extends CyclicBehaviour {
                 StringBuffer content = new StringBuffer("");
                 for (Objet produit : produits) {
 
-                    // Définir stratégie pour prix
-                    int prix = 42;
-
                     content.append(produit.getIdCategorie().getTypeCategorie())
                             .append("/")
                             .append(produit.getNomObjet())
                             .append("/")
-                            .append(String.valueOf(prix))
+                            .append(produit.getRefObjet())
                             .append(",");
                 }
                 

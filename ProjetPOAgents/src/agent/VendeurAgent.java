@@ -5,7 +5,6 @@ import behaviour.MiseAJourMarge;
 import behaviour.RequeteClientProduit;
 import behaviour.RequeteClientProduits;
 import dao.DAOFactory;
-import dao.exceptions.IllegalOrphanException;
 import data.Objet;
 import data.Stock;
 import data.Vendeur;
@@ -102,6 +101,17 @@ public class VendeurAgent extends Agent {
         addBehaviour(new AchatClientProduit());
         addBehaviour(new RequeteClientProduits());
 
+        //addBehaviour(new SearchBetterProviderBehaviour(this));
+        // toute les 20 secondes on vérifie no stocks et notre trésorerie pour racheter des produit et ajuster nos marge
+        addBehaviour(new TickerBehaviour(this, 1000) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onTick() {
+                //TODO update product margin in comparison to previous sales
+            }
+        });
+
         // Enregistrement du service de vente d'objets
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(getAID());
@@ -171,11 +181,7 @@ public class VendeurAgent extends Agent {
                 int prix = (int) (55 + Math.random() * (75 - 55 + 1));
                 for (int cpt = 0; cpt <= 5; cpt++) {
                     Vente vente = new Vente(new Date(later.getTime()), prix, "buyer", objet);
-                    try {
-                        DAOFactory.getVenteDAO().create(vente);
-                    } catch (IllegalOrphanException ex) {
-                        Logger.getLogger(VendeurAgent.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+                    DAOFactory.getVenteDAO().create(vente);
                 }
             }
         }

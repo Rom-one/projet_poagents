@@ -8,7 +8,6 @@ package data;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,7 +17,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -36,9 +34,9 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Stock.findByIdStock", query = "SELECT s FROM Stock s WHERE s.idStock = :idStock"),
     @NamedQuery(name = "Stock.findByDateStockage", query = "SELECT s FROM Stock s WHERE s.dateStockage = :dateStockage"),
     @NamedQuery(name = "Stock.findByDatePaiement", query = "SELECT s FROM Stock s WHERE s.datePaiement = :datePaiement"),
-    @NamedQuery(name = "Stock.findByNbVendu", query = "SELECT s FROM Stock s WHERE s.nbVendu = :nbVendu"),
     @NamedQuery(name = "Stock.findByQuantite", query = "SELECT s FROM Stock s WHERE s.quantite = :quantite"),
     @NamedQuery(name = "Stock.findByPrixAchat", query = "SELECT s FROM Stock s WHERE s.prixAchat = :prixAchat"),
+    @NamedQuery(name = "Stock.findByObjet", query = "SELECT s FROM Stock s WHERE s.refObjet = :objet"),
     @NamedQuery(name = "Stock.findByObjetAndSemaine", query = "SELECT s FROM Stock s WHERE s.refObjet = :refObjet AND s.dateStockage BETWEEN :semaine1 AND :semaine2")})
 public class Stock implements Serializable {
 
@@ -58,15 +56,10 @@ public class Stock implements Serializable {
     private Date datePaiement;
     @Basic(optional = false)
     @Column(nullable = false)
-    private int nbVendu;
-    @Basic(optional = false)
-    @Column(nullable = false)
     private int quantite;
     @Basic(optional = false)
     @Column(nullable = false)
     private int prixAchat;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "idStock")
-    private Vente vente;
     @JoinColumn(name = "refObjet", referencedColumnName = "refObjet", nullable = false)
     @ManyToOne(optional = false)
     private Objet refObjet;
@@ -78,11 +71,10 @@ public class Stock implements Serializable {
         this.idStock = idStock;
     }
 
-    public Stock(Integer idStock, Date dateStockage, Date datePaiement, int nbVendu, int quantite, int prixAchat) {
+    public Stock(Integer idStock, Date dateStockage, Date datePaiement, int quantite, int prixAchat) {
         this.idStock = idStock;
         this.dateStockage = dateStockage;
         this.datePaiement = datePaiement;
-        this.nbVendu = nbVendu;
         this.quantite = quantite;
         this.prixAchat = prixAchat;
     }
@@ -119,14 +111,6 @@ public class Stock implements Serializable {
         this.datePaiement = datePaiement;
     }
 
-    public int getNbVendu() {
-        return nbVendu;
-    }
-
-    public void setNbVendu(int nbVendu) {
-        this.nbVendu = nbVendu;
-    }
-
     public int getQuantite() {
         return quantite;
     }
@@ -141,14 +125,6 @@ public class Stock implements Serializable {
 
     public void setPrixAchat(int prixAchat) {
         this.prixAchat = prixAchat;
-    }
-
-    public Vente getVente() {
-        return vente;
-    }
-
-    public void setVente(Vente vente) {
-        this.vente = vente;
     }
 
     public Objet getRefObjet() {
