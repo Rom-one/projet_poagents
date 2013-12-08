@@ -131,10 +131,10 @@ public class Vendeur implements Serializable {
     public void setMargeByPrix(Objet objet) {
         ArrayList<Vente> ventes = (ArrayList<Vente>) DAOFactory.getVenteDAO()
                 .getEntityManager()
-                .createNamedQuery("findByObjetAndSemaine")
+                .createNamedQuery("Vente.findByObjetAndSemaine")
                 .setParameter("objet", objet)
                 .setParameter("semaine1", VendeurAgent.getDate(VendeurAgent.getSemaineCourante() - 1))
-                .setParameter("semaine2", VendeurAgent.getSemaineCourante())
+                .setParameter("semaine2", VendeurAgent.getDate(VendeurAgent.getSemaineCourante()))
                 .getResultList();
 
         int prix = objet.getPrixVente();
