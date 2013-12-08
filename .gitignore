@@ -249,3 +249,5 @@ build
 !*.xcworkspace/contents.xcworkspacedata
 ProjetPOAgents/src/META-INF/persistence.xml
 ProjetPOAgents/src/hibernate.cfg.xml
+APDescription.txt
+MTPs-Main-Container.txt
