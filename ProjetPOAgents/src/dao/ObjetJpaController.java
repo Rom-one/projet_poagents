@@ -3,22 +3,23 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package dao;
 
+import agent.VendeurAgent;
 import dao.exceptions.IllegalOrphanException;
 import dao.exceptions.NonexistentEntityException;
-import java.io.Serializable;
-import javax.persistence.Query;
-import javax.persistence.EntityNotFoundException;
 import data.Categorie;
 import data.Objet;
+import data.Stock;
 import data.Vente;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import data.Stock;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -276,5 +277,44 @@ public class ObjetJpaController implements Serializable {
             em.close();
         }
     }
-    
+
+    public int getStockRestant(Objet objet) {
+        EntityManager em = getEntityManager();
+        TypedQuery<Vente> qVentes = getEntityManager().createNamedQuery("Vente.findByObjet", Vente.class);
+        qVentes.setParameter("objet", objet);
+        List<Vente> ventes = qVentes.getResultList();
+
+        TypedQuery<Stock> qStocks = getEntityManager().createNamedQuery("Stock.findByObjet", Stock.class);
+        qStocks.setParameter("objet", objet);
+        List<Stock> stocks = qStocks.getResultList();
+        int nbventes = ventes.size();
+        int nbachats = 0;
+
+        for (Stock stock : stocks) {
+            nbachats += stock.getQuantite();
+        }
+
+        return nbachats - nbventes;
+    }
+
+    // Prix de vente minimum (sans vendre à perte)
+    public int getPrixMinimum(Objet objet) {
+
+        TypedQuery<Stock> qStocks = getEntityManager().createNamedQuery("Stock.findByObjet", Stock.class);
+        qStocks.setParameter("objet", objet);
+        List<Stock> stocks = qStocks.getResultList();
+        int prix = 0;
+        for (Stock stock : stocks) {
+            if (stock.getPrixAchat() > prix) {
+                prix = stock.getPrixAchat();
+            }
+        }
+
+        // Si c'est la période de soldes, alors on peut vendre à perte
+        if (VendeurAgent.isSoldes(VendeurAgent.getSemaineCourante())) {
+            prix -= prix * Objet.POURCENTAGE_PERTE;
+        }
+
+        return prix;
+    }
 }

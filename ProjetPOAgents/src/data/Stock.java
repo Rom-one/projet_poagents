@@ -8,7 +8,6 @@ package data;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,7 +17,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -38,6 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Stock.findByDatePaiement", query = "SELECT s FROM Stock s WHERE s.datePaiement = :datePaiement"),
     @NamedQuery(name = "Stock.findByQuantite", query = "SELECT s FROM Stock s WHERE s.quantite = :quantite"),
     @NamedQuery(name = "Stock.findByPrixAchat", query = "SELECT s FROM Stock s WHERE s.prixAchat = :prixAchat"),
+    @NamedQuery(name = "Stock.findByObjet", query = "SELECT s FROM Stock s WHERE s.refObjet = :objet"),
     @NamedQuery(name = "Stock.findByObjetAndSemaine", query = "SELECT s FROM Stock s WHERE s.refObjet = :refObjet AND s.dateStockage BETWEEN :semaine1 AND :semaine2")})
 public class Stock implements Serializable {
 
