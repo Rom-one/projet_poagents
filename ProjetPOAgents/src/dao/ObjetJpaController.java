@@ -14,7 +14,9 @@ import data.Stock;
 import data.Vente;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityNotFoundException;
@@ -316,5 +318,52 @@ public class ObjetJpaController implements Serializable {
         }
 
         return prix;
+    }
+
+    public Map<Objet, Integer> getObjetsARacheter() {
+        List<Objet> objets = findObjetEntities();
+
+        Map<Objet, Integer> mapObjetQt = new HashMap<>();
+        if (!objets.isEmpty()) {
+            for (Objet objet : objets) {
+
+                int stockObjet = DAOFactory.getObjetDAO().getStockRestant(objet);
+                int ventePrec = DAOFactory.getVenteDAO().getVentesSemainePrecedenteObjet(objet);
+                int stockTotal = DAOFactory.getStockDAO().getTotalObjetEnStock();
+                System.out.println("Objet : " + objet.getNomObjet());
+                System.out.println("StockObjet : " + stockObjet);
+                System.out.println("ventePrec : " + ventePrec);
+                System.out.println("stockTotal : " + stockTotal);
+                if (stockObjet == 0) {
+                    stockObjet = 1;
+                }
+                if (ventePrec == 0) {
+                    ventePrec = 1;
+                }
+                //Si on a plus assez de place dans le stock, on essaie pas d'acheter le produit, premier check
+                if (ventePrec * 2 > (VendeurAgent.STOCK_MOYEN - stockTotal)) {
+                    continue;
+                }
+
+                // Stock supérieur à 3 fois les ventes de la semaine précédentes, on ne rachète pas
+                if (stockObjet > (ventePrec * 3)) {
+                    continue;
+                }
+                // Produit est en perte de vente
+                if (!DAOFactory.getVenteDAO().isEnCroissance(objet)) {
+                    if (stockObjet < ventePrec) {
+                        // Il y a moins de stock que de ventes de la semaine précendente, donc on en rachète
+                        mapObjetQt.put(objet, ventePrec * 2);
+                    } else {
+                        mapObjetQt.put(objet, ventePrec);
+                    }
+                } else {
+                    // Produit en croissance on en rachète donc 1.5 fois plus
+                    mapObjetQt.put(objet, ventePrec * (3 / 2));
+                }
+            }
+        }
+
+        return mapObjetQt;
     }
 }

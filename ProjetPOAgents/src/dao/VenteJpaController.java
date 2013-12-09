@@ -3,18 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package dao;
 
+import agent.VendeurAgent;
 import dao.exceptions.NonexistentEntityException;
-import java.io.Serializable;
-import javax.persistence.Query;
-import javax.persistence.EntityNotFoundException;
 import data.Objet;
 import data.Vente;
+import java.io.Serializable;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -158,5 +159,50 @@ public class VenteJpaController implements Serializable {
             em.close();
         }
     }
-    
+
+    public Integer getVentesSemainePrecedenteObjet(Objet objet) {
+        Integer res;
+        EntityManager em = getEntityManager();
+        TypedQuery<Vente> qVentes = getEntityManager().createNamedQuery("Vente.findByObjetAndSemaine", Vente.class);
+        qVentes.setParameter("objet", objet);
+        qVentes.setParameter("semaine1", VendeurAgent.getDate(VendeurAgent.getSemaineCourante()));
+        //System.err.println(VendeurAgent.getDate(VendeurAgent.getSemaineCourante()));
+        qVentes.setParameter("semaine2", VendeurAgent.getDate(VendeurAgent.getSemaineCourante() - 1));
+        //System.err.println(VendeurAgent.getDate(VendeurAgent.getSemaineCourante() - 1));
+        List<Vente> ventes = qVentes.getResultList();
+        if (ventes.isEmpty()) {
+            res = 0;
+        } else {
+            res = ventes.size();
+        }
+        return res;
+    }
+
+    public boolean isEnCroissance(Objet objet) {
+        boolean croissance = false;
+        Integer semainePrec = getVentesSemainePrecedenteObjet(objet);
+
+        EntityManager em = getEntityManager();
+        TypedQuery<Vente> qVentes = getEntityManager().createNamedQuery("Vente.findByObjetAndSemaine", Vente.class);
+        qVentes.setParameter("objet", objet);
+        qVentes.setParameter("semaine1", VendeurAgent.getDate(VendeurAgent.getSemaineCourante() - 2));
+        qVentes.setParameter("semaine2", VendeurAgent.getDate(VendeurAgent.getSemaineCourante() - 1));
+        List<Vente> ventesSemaineMoins2 = qVentes.getResultList();
+        Integer semainePrecMoins2 = ventesSemaineMoins2.size();
+        return (semainePrec > semainePrecMoins2);
+    }
+
+    public void tronquer() {
+        EntityManager em = getEntityManager();
+        try {
+            Class c = getEntityManager().getClass();
+            Query q = em.createQuery("DELETE FROM " + c.getSimpleName());
+            q.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("Impossible de delete from Vente");
+        } finally {
+            em.close();
+        }
+    }
+
 }

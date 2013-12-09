@@ -17,11 +17,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -38,7 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "Vente.findByPrixVente", query = "SELECT v FROM Vente v WHERE v.prixVente = :prixVente"),
     @NamedQuery(name = "Vente.findByAcheteur", query = "SELECT v FROM Vente v WHERE v.acheteur = :acheteur"),
     @NamedQuery(name = "Vente.findByObjet", query = "SELECT v FROM Vente v WHERE v.refObjet = :objet"),
-    @NamedQuery(name = "Vente.findByObjetAndSemaine", query = "SELECT v FROM Vente v WHERE v.refObjet = :objet AND v.dateVente BETWEEN :semaine1 AND :semaine2")})
+    @NamedQuery(name = "Vente.findByObjetAndSemaine", query = "SELECT v FROM Vente v WHERE v.refObjet = :objet AND v.dateVente < :semaine1 AND v.dateVente > :semaine2")})
 public class Vente implements Serializable {
 
     private static final long serialVersionUID = 1L;

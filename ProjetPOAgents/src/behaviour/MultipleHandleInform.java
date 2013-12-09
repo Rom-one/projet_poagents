@@ -9,7 +9,6 @@ import agent.VendeurAgent;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.ParallelBehaviour;
-import java.util.Arrays;
 
 /**
  *
@@ -24,20 +23,20 @@ class MultipleHandleInform extends ParallelBehaviour {
         // On veut que tout les fournisseur répondent à notre demande WHEN_ALL donc..
         super(agent, WHEN_ALL);
         this.myAgent = (VendeurAgent) agent;
+    }
+
+    @Override
+    public void onStart() {
         //On veut trouver tout les agent fournisseurs
         AID[] providers = this.myAgent.searchProvider();
-        System.out.println("providers : " + Arrays.toString(providers));
-
         // Données qu'utiliseront les subBehaviour pour partager l'informations du meilleur prix de fournisseur
-        myAgent.setBestProvider(null);
-        myAgent.setBestPrice(Double.MAX_VALUE);
         if (providers.length != 0) {
             for (AID aid : providers) {
                 addSubBehaviour(new HandleInform(myAgent, aid));
-                System.out.println("ok handle crée pour " + aid.toString());
+                System.out.println("J'attends la réponse de  " + aid.toString());
             }
         }
-
+        super.onStart(); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -47,8 +46,9 @@ class MultipleHandleInform extends ParallelBehaviour {
             System.out.println("On a trouvé le prix le plus bas !! Il est proposé par " + myAgent.getBestProvider());
             System.out.println("Au prix de " + myAgent.getBestPrice());
         } else {
-            System.out.println("Aucun frounisseur sur ce tour");
+            System.out.println("Aucun fournisseur sur ce tour de négociation");
         }
+
         return res;
     }
 

@@ -29,21 +29,32 @@ import java.util.logging.Logger;
  */
 public class VendeurAgent extends Agent {
 
-    private final static int STOCK_MOYEN = 15000;
-    private final static int TRESORIE_MOYENNE = 15000;
+    public final static int STOCK_MOYEN = 15000;
+    public final static int TRESORIE_MOYENNE = 15000;
 
-    private final static int SEMAINE_MS = 1000;
-    private final static long TEMPS_DEPART = System.currentTimeMillis() - 5 * SEMAINE_MS;
+    private final static int SEMAINE_MS = 30000;
+    private final static long TEMPS_DEPART = System.currentTimeMillis();// - 5 * SEMAINE_MS;
+    public static final int TEMPS_POUR_REPONDRE = 30000;
 
     private final static String CUSTOMER_SERVICE_TYPE = "customer";
     private final static String PROVIDER_SERVICE_TYPE = "provider";
     private final static String BUSINESS_SERVICE_TYPE = "business";
+    private static final long serialVersionUID = 1L;
 
     private List<Objet> catalogue;
     private Vendeur vendeur;
     private AID bestProvider = null;
     private Double bestPrice;
     private AID[] providersInDeal;
+    private Integer tresorerie;
+
+    public Integer getTresorerie() {
+        return tresorerie;
+    }
+
+    public void setTresorerie(Integer tresorerie) {
+        this.tresorerie = tresorerie;
+    }
 
     public AID[] getProvidersInDeal() {
         return providersInDeal;
@@ -99,33 +110,35 @@ public class VendeurAgent extends Agent {
         return (cal.get(Calendar.MONTH) == Calendar.JANUARY || cal.get(Calendar.MONTH) == Calendar.FEBRUARY);
     }
 
+    public VendeurAgent() {
+        this.tresorerie = TRESORIE_MOYENNE;
+        this.bestPrice = Double.MAX_VALUE;
+        this.bestProvider = null;
+    }
+
+    public VendeurAgent(Integer tresorerie) {
+        this.tresorerie = tresorerie;
+        this.bestPrice = Double.MAX_VALUE;
+        this.bestProvider = null;
+    }
+
     @Override
     protected void setup() {
         // Initialisation du stock et de la trésorie
         int stock = STOCK_MOYEN;
-        int tresorie = TRESORIE_MOYENNE;
 
         // Initialisation du vendeur
-        vendeur = new Vendeur(tresorie, stock);
+        vendeur = new Vendeur(this.tresorerie, stock);
 
         //Acheter stock de départ:
         // Pour chaque produit
         // Rechercher tous les fournisseurs proposant ce produit
         // Puis Acheter ce produit au fournisseur
-        genererStocks();
-        genererVentes();
-
-        // Enregistrement des comportements client
-        addBehaviour(new RequeteClientProduit());
-        addBehaviour(new AchatClientProduit());
-        addBehaviour(new RequeteClientProduits());
-
-        addBehaviour(new SearchBetterProviderBehaviour(this));
-
+        //genererStocks();
+        //genererVentes();
         // Enregistrement du service de vente d'objets
         DFAgentDescription dfd = new DFAgentDescription();
         dfd.setName(getAID());
-        searchProvider();
 
         ServiceDescription sd = new ServiceDescription();
         sd.setType(BUSINESS_SERVICE_TYPE);
@@ -143,6 +156,12 @@ public class VendeurAgent extends Agent {
             System.err.println("Impossible d'enregistrer les services !! ou erreur FIPA");
         }
 
+        // Enregistrement des comportements client
+        addBehaviour(new RequeteClientProduit());
+        addBehaviour(new AchatClientProduit());
+        addBehaviour(new RequeteClientProduits());
+        // Comportement avec fournisseur
+        addBehaviour(new SearchBetterProviderBehaviour(this));
         // Comportement mettant à jour la marge de chaque objet toutes les semaines
         addBehaviour(new MiseAJourMarge(this, SEMAINE_MS));
     }
@@ -162,7 +181,7 @@ public class VendeurAgent extends Agent {
     public void genererStocks() {
         for (Objet objet : getCatalogue()) {
             long time = System.currentTimeMillis() - (3600 * 24 * 7 * 5);
-            Stock stock = new Stock(new Date(time), new Date(time), 50, 50, objet);
+            Stock stock = new Stock(new Date(time), new Date(time), 38, 50, objet);
             DAOFactory.getStockDAO().create(stock);
         }
     }

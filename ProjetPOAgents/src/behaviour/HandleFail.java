@@ -5,20 +5,20 @@
  */
 package behaviour;
 
-import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.SimpleBehaviour;
 
 /**
  *
  * @version 0.1
  */
-class HandleBegin extends Behaviour {
+class HandleFail extends SimpleBehaviour {
 
-    public HandleBegin() {
+    public HandleFail() {
     }
 
     @Override
     public void action() {
-        System.out.println("Premier State du behaviour");
+        System.out.println("Les négociations ont échoué ! Soit vous être trop long, soit vous n'avez pas l'argent suffisant");
     }
 
     @Override

@@ -3,18 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package dao;
 
 import dao.exceptions.NonexistentEntityException;
-import java.io.Serializable;
-import javax.persistence.Query;
-import javax.persistence.EntityNotFoundException;
 import data.Objet;
 import data.Stock;
+import java.io.Serializable;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityNotFoundException;
+import javax.persistence.Query;
 
 /**
  *
@@ -158,5 +157,27 @@ public class StockJpaController implements Serializable {
             em.close();
         }
     }
-    
+
+    public int getTotalObjetEnStock() {
+        int res = 0;
+        List<Objet> objetList = DAOFactory.getObjetDAO().findObjetEntities();
+        for (Objet objet : objetList) {
+            res += DAOFactory.getObjetDAO().getStockRestant(objet);
+        }
+        return res;
+    }
+
+    public void tronquer() {
+        EntityManager em = getEntityManager();
+        try {
+            Class c = getEntityManager().getClass();
+            Query q = em.createQuery("DELETE FROM " + c.getSimpleName());
+            int executeUpdate = q.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("erreur de DELETE table from Stock");
+        } finally {
+            em.close();
+        }
+    }
+
 }

@@ -140,16 +140,17 @@ public class Vendeur implements Serializable {
 
         int nbventes = ventes.size();
         int stock = DAOFactory.getObjetDAO().getStockRestant(objet);
+        double pourcentage = 0.9;
+        if (stock != 0) {
+            pourcentage = (double) (nbventes / stock);
 
-        double pourcentage = (double) (nbventes / stock);
-
-        // Si on est presque en rupture de stock
-        if (pourcentage > 0.9) {
-            prix += prix * 0.1;
-            objet.setPrixVente(prix);
-        } else if ((prix -= prix * 0.1) >= DAOFactory.getObjetDAO().getPrixMinimum(objet)) {
-            objet.setPrixVente(prix);
+            // Si on est presque en rupture de stock
+            if (pourcentage > 0.9) {
+                prix += prix * 0.1;
+                objet.setPrixVente(prix);
+            } else if ((prix -= prix * 0.1) >= DAOFactory.getObjetDAO().getPrixMinimum(objet)) {
+                objet.setPrixVente(prix);
+            }
         }
     }
-
 }

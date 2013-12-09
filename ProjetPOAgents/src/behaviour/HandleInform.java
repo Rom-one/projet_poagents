@@ -23,8 +23,8 @@ public class HandleInform extends SimpleBehaviour {
     private MessageTemplate mtProvider;
     private MessageTemplate mt;
     private VendeurAgent myAgent;
+    //private Integer countAttente;
 
-    int aleatoire;
     boolean finished;
 
     public HandleInform() {
@@ -37,40 +37,54 @@ public class HandleInform extends SimpleBehaviour {
         finished = false;
         mtProvider = MessageTemplate.MatchSender(provider);
         mt = MessageTemplate.and(mtpPerformative, mtProvider);
+        //countAttente = 0;
     }
 
     @Override
     public void action() {
-        // On attend un message précis INFORM d'un provider préçis
+        //On attend un message précis INFORM d'un provider préçis
         ACLMessage msg = myAgent.receive(mt);
+        //if (countAttente < 3) {
         if (msg != null) {
             // On vérifie l'existence ce provider dans le DF
             String content = msg.getContent();
             double price = 0;
             double betterPrice = 0;
-            try {
-                price = Double.valueOf(content);
-                betterPrice = myAgent.getBestPrice();
-            } catch (NumberFormatException e) {
-                System.err.println("Prix reçu au mauvais format!");
-            }
+            if (content != null) {
+                try {
+                    price = Double.valueOf(content);
+                    betterPrice = myAgent.getBestPrice();
+                    // On regarde si le prix que nous a proposé ce founisseur est plus avantageux
+                    if (price < betterPrice) {
+                        myAgent.setBestProvider(msg.getSender());
+                        myAgent.setBestPrice(price);
+                    }
+                } catch (NumberFormatException e) {
+                    System.err.println("Prix reçu au mauvais format!");
+                } catch (Exception e) {
+                    System.err.println("Problème pour la transformation de string en double");
+                }
 
-            // On regarde si le prix que nous a proposé ce founisseur est plus avantageux
-            if (price < betterPrice) {
-                myAgent.setBestProvider(msg.getSender());
-                myAgent.setBestPrice(price);
+                // Ce fournisseur nous a répondu, le Behaviour est donc fini
             }
-            // Ce fournisseur nous a répondu, le Behaviour est donc fini
             finished = true;
         } else {
-            block();
+            block(VendeurAgent.TEMPS_POUR_REPONDRE);
         }
+//        } else {
+//            finished = true;
+//        }
+//        countAttente++;
     }
 
     @Override
     public boolean done() {
         if (finished) {
-            System.out.println("J'ai reçu la réponse que j'attendais");
+            if (myAgent.getBestProvider() == null) {
+                System.out.println("Tempis pour ce fournisseur..");
+            } else if (myAgent.getBestProvider().equals(myAgent.getAID())) {
+                System.out.println("J'ai reçu la réponse que j'attendais de " + myAgent.getAID());
+            }
         }
         return finished;
     }

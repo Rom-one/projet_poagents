@@ -6,6 +6,7 @@
 package behaviour;
 
 import agent.VendeurAgent;
+import data.Objet;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.OneShotBehaviour;
@@ -18,11 +19,21 @@ import jade.lang.acl.ACLMessage;
 public class HandleQueryPrice extends OneShotBehaviour {
 
     private static final long serialVersionUID = 1L;
-    VendeurAgent myAgent;
+    private VendeurAgent myAgent;
+    private Objet objet;
+
+    public HandleQueryPrice() {
+        super();
+    }
 
     public HandleQueryPrice(Agent agent) {
         super(agent);
+    }
+
+    public HandleQueryPrice(Agent agent, Objet objet) {
+        super(agent);
         this.myAgent = (VendeurAgent) agent;
+        this.objet = objet;
     }
 
     @Override
@@ -33,20 +44,17 @@ public class HandleQueryPrice extends OneShotBehaviour {
             for (AID aid : providers) {
                 msg.addReceiver(aid);
                 //TODO récupérer la ref du produit qu'on veut vraiment acheter
-                msg.setContent("2");
+                msg.setContent(String.valueOf(objet.getRefObjet()));
                 myAgent.send(msg);
-                System.out.println("Requête de prix envoyé a " + aid);
+                System.out.println("Requête de prix envoyé a " + aid + " pour l'objet de reférence " + String.valueOf(objet.getRefObjet()));
             }
-
         }
     }
 
     @Override
     public int onEnd() {
-        if (myAgent.getBestProvider() == null) {
-            System.out.println("Donc aucun message à envoyer ");
-        }
-        return super.onEnd(); //To change body of generated methods, choose Tools | Templates.
+        System.out.println("tresorerie = " + myAgent.getTresorerie());
+        return super.onEnd();
     }
 
 }
