@@ -39,7 +39,7 @@ public class RequeteClientProduit extends CyclicBehaviour {
                 }
             }
 
-            int prix = 42;
+            int prix = produit.getPrixVente();
             // Définir la stratégie à adopter pour le prix
             
             ACLMessage reply = request.createReply();
