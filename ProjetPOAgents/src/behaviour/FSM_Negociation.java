@@ -66,15 +66,17 @@ public class FSM_Negociation extends FSMBehaviour {
             this.registerState(new SendOneShotInform(vAgent, vAgent.getBestProvider(), entry), "A");
             this.registerState(new HandlePropose(vAgent), "B");
             this.registerLastState(new HandleAgree(vAgent), "C");
-            this.registerLastState(new HandleFail(), "D");
+            this.registerState(new HandleContrePropose(vAgent), "D");
+            this.registerLastState(new HandleFail(), "H");
 
             //definition des transaction
             this.registerTransition("F", "A", 0);
-            this.registerTransition("F", "D", 1);
+            this.registerTransition("F", "H", 1);
             this.registerTransition("A", "B", 0);
-            this.registerTransition("A", "D", 1);
+            this.registerTransition("A", "H", 1);
             this.registerTransition("B", "C", 0);
             this.registerTransition("B", "D", 1);
+            this.registerTransition("D", "H", 0);
             super.onStart(); //To change body of generated methods, choose Tools | Templates.
         } else {
             System.out.println("Négociation inutile");

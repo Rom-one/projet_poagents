@@ -18,7 +18,7 @@ class HandleFail extends SimpleBehaviour {
 
     @Override
     public void action() {
-        System.out.println("Les négociations ont échoué ! Soit vous être trop long, soit vous n'avez pas l'argent suffisant");
+        System.out.println("Les négociations ont échoué !");
     }
 
     @Override

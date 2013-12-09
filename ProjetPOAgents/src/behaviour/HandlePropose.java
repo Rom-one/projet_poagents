@@ -55,6 +55,16 @@ public class HandlePropose extends SimpleBehaviour {
                     List<Proposition> propositions = Proposition.getListProposition(message);
                     ((FSM_Negociation) ((this.getParent()))).setProposition(propositions);
                 } else {
+                    ACLMessage msgTosend = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
+                    msgTosend.addReceiver(aclMessage.getSender());
+                    String m;
+                    m = Proposition.getPropositionString(message, vAgent.getTresorerie());
+                    msgTosend.setContent(m);
+                    vAgent.send(msgTosend);
+                    System.out.println(vAgent.getLocalName() + ": I received message Propose"
+                                       + aclMessage + "with content" + message + " and I send an REJECT");
+                    List<Proposition> propositions = Proposition.getListProposition(m);
+                    ((FSM_Negociation) ((this.getParent()))).setProposition(propositions);
                     end = 1;
                 }
 

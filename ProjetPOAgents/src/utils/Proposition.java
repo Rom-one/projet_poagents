@@ -5,6 +5,7 @@
  */
 package utils;
 
+import dao.DAOFactory;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,10 +111,43 @@ public class Proposition {
         boolean acceptable = false;
         List<Proposition> propositions = null;
         propositions = getListProposition(propositionString);
-        int prixTotal = 0;
+        Double prixTotal = getPrixTotalList(propositions);
+        return (prixTotal < tresorerie);
+    }
+
+    public static Double getPrixTotalList(List<Proposition> propositions) {
+        Double prixTotal = 0.0;
         for (Proposition proposition : propositions) {
             prixTotal += proposition.getPrixTotal();
         }
-        return (prixTotal < tresorerie);
+        return prixTotal;
+    }
+
+    public static String getPropositionString(String message, int tresorerie) {
+        List<Proposition> propositions = getListProposition(message);
+        String res = null;
+        if (!propositions.isEmpty()) {
+            Double prixTot = getPrixTotalList(propositions);
+            String refObjet = null;
+            Integer quantite = 0;
+            Integer delaiFab = 0;
+            Integer delaiPaie = 0;
+            for (Proposition proposition : propositions) {
+                refObjet = proposition.getObjet();
+                quantite += proposition.getQuantite();
+                delaiFab = proposition.getDelaiFabrication();
+                delaiPaie = proposition.getDelaiPaiement();
+            }
+            Integer stocks = DAOFactory.getObjetDAO().getStockRestant(DAOFactory.getObjetDAO().findObjet(Integer.valueOf(refObjet)));
+            if (quantite > 2 * stocks) {
+                quantite = 2 * stocks;
+            }
+            if (prixTot > tresorerie) {
+                prixTot = new Double(tresorerie);
+            }
+            res = refObjet + "," + quantite + "," + prixTot + "," + delaiFab + "," + delaiPaie;
+        }
+        return res;
+
     }
 }
